@@ -71,7 +71,43 @@ Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMin
 
 ##  Linux build
 
-(soon)
+
+FIRST : install all dependencies : 
+
+g++ (7.x or superior)
+cmake
+ffmpeg : version 4.1+
+libavutils-dev libavformat-dev libavcodec-dev libavfilter-dev libswresample-dev libswscale-dev (and dependencies)
+libmp3lame-dev libmp3lame0 libv4l-dev v4l-utils libx264-dev libvpx-dev
+
+optional : 
+
+- libva (and dependencies)
+- v4l2loopback-source  v4l2loopback-utils)
+
+To build :
+
+git clone https://framagit.org/ericb/ffmpeg-cpp2.git
+cd ffmpeg-cpp2
+mkdir build
+cd build
+cmake ..
+make
+=> if nothing wrong occurs, the libffmpeg-cpp.a (static) should be built
+
+To test :
+
+cd ../demos
+choose one folder. e.g. : Remuxing  => cd Remuxing
+
+./compile_me.sh
+
+=> ./remuxing 
+
+Have Fun !
+
+
+
 
 
 ## C++
