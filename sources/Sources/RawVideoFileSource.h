@@ -12,7 +12,7 @@ namespace ffmpegcpp
 	{
 	public:
 
-		RawVideoFileSource(const char* fileName, FrameSink* frameSink);
+		RawVideoFileSource(const char* fileName, FrameSink* m_frameSink);
 
                 RawVideoFileSource(const char*, int, int, int, AVPixelFormat);
 		// I couldn't get this to work. The thing is that it also crashes weirdly when I run ffmpeg directly,
@@ -29,13 +29,13 @@ namespace ffmpegcpp
 	private:
 		AVFormatContext    * pAVFormatContextIn;
 		AVDictionary       * options;
-		enum AVPixelFormat   format;
+		enum AVPixelFormat   m_format;
 		AVCodec            * pAVCodec;
 		AVInputFormat      * inputFormat;
 		int                  width;
 		int                  height;
-		int                  framerate;
+		int                  m_framerate;
 		void                 CleanUp();
-		FrameSink          * frameSink;
+		FrameSink          * m_frameSink;
 	};
 }

@@ -3,9 +3,9 @@
 
 namespace ffmpegcpp
 {
-	VideoFormatConverter::VideoFormatConverter(AVCodecContext* codecContext)
+	VideoFormatConverter::VideoFormatConverter(AVCodecContext* p_codecContext)
 	{
-		this->codecContext = codecContext;
+		this->codecContext = p_codecContext;
 
 		converted_frame = av_frame_alloc();
 		int ret;

@@ -7,13 +7,14 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-    RawVideoFileSource::RawVideoFileSource(const char* fileName, FrameSink* frameSink)
+    RawVideoFileSource::RawVideoFileSource(const char* fileName, FrameSink* p_frameSink)
     {
+        setFrameSink(p_frameSink);
         // create the demuxer - it can handle figuring out the video type on its own apparently
         try
         {
             demuxer = new Demuxer(fileName, NULL, NULL);
-            demuxer->DecodeBestVideoStream(frameSink);
+            demuxer->DecodeBestVideoStream(m_frameSink);
 
         }
         catch (FFmpegException e)
@@ -32,7 +33,7 @@ namespace ffmpegcpp
 
         width  = d_width;
         height = d_height;
-        framerate = d_framerate;
+        m_framerate = d_framerate;
         //frameSink = aFrameSink;
 #ifdef _WIN32
         // Fixed by the operating system
@@ -74,7 +75,7 @@ namespace ffmpegcpp
 #ifdef DEBUG
         const char * framerate_option_name = "frameRate";
         char frameRateValue[10];
-        sprintf(frameRateValue, "%d", framerate);
+        sprintf(frameRateValue, "%d", m_framerate);
 
         std::cerr << "framerate_option_name :  " << framerate_option_name  << "\n";
         std::cerr << "frameRateValue        :  " << frameRateValue  << "\n";
@@ -158,7 +159,7 @@ namespace ffmpegcpp
 
     void RawVideoFileSource::setFrameSink(FrameSink * aFrameSink)
     {
-        frameSink = aFrameSink;
+        m_frameSink = aFrameSink;
     }
 
     void RawVideoFileSource::PreparePipeline()
