@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ffmpeg-cpp/ffmpeg.h"
+#include "ffmpeg.h"
 
 
 #include "VideoFrameSink.h"
