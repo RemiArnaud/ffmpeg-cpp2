@@ -48,7 +48,7 @@ int main()
 
 		// Load a video from a container and send it to the filter first.
 		Demuxer* demuxer = new Demuxer("../../samples/big_buck_bunny.mp4");
-                Demuxer* audioDemuxer = new Demuxer("../../samples/AC_DC_Hells_Bells.mp3");
+                Demuxer* audioDemuxer = new Demuxer("../../samples/big_buck_bunny.mp4");
 
 		demuxer->DecodeBestVideoStream(filter);
                 audioDemuxer->DecodeBestAudioStream(aEncoder);
