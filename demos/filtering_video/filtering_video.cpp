@@ -47,8 +47,8 @@ int main()
 		Filter* filter = new Filter("scale=640:250,transpose=cclock,vignette", vEncoder);
 
 		// Load a video from a container and send it to the filter first.
-		Demuxer* demuxer = new Demuxer("../samples/big_buck_bunny.mp4");
-                Demuxer* audioDemuxer = new Demuxer("../samples/AC_DC_Hells_Bells.mp3");
+		Demuxer* demuxer = new Demuxer("../../samples/big_buck_bunny.mp4");
+                Demuxer* audioDemuxer = new Demuxer("../../samples/AC_DC_Hells_Bells.mp3");
 
 		demuxer->DecodeBestVideoStream(filter);
                 audioDemuxer->DecodeBestAudioStream(aEncoder);
