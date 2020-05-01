@@ -7,11 +7,11 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	Filter::Filter(const char* filterString, FrameSink* target)
+	Filter::Filter(const char* p_filterString, FrameSink* p_target)
 	{
-		this->targetMediaType = target->GetMediaType();
-		this->target = target->CreateStream();
-		this->filterString = filterString;
+		this->targetMediaType = p_target->GetMediaType();
+		this->m_target = p_target->CreateStream();
+		this->m_filterString = p_filterString;
 	}
 
 	AVMediaType Filter::GetMediaType()
@@ -80,7 +80,7 @@ namespace ffmpegcpp
 			{
 				fullFilterString += "[in_" + to_string(i + 1) + "] ";
 			}
-			fullFilterString += filterString;
+			fullFilterString += m_filterString;
 			fullFilterString += " [result]; [result] ";
 			fullFilterString += GetBufferSinkName(targetMediaType);
 
@@ -273,7 +273,7 @@ namespace ffmpegcpp
 		}
 		if (allClosed)
 		{
-			target->Close();
+			m_target->Close();
 		}
 	}
 
@@ -292,7 +292,7 @@ namespace ffmpegcpp
 				throw FFmpegException(std::string("Error during filtering").c_str(), ret);
 			}
 
-			target->WriteFrame(filt_frame, &outputMetaData);
+			m_target->WriteFrame(filt_frame, &outputMetaData);
 
 			av_frame_unref(filt_frame);
 		}
@@ -301,6 +301,6 @@ namespace ffmpegcpp
 
 	bool Filter::IsPrimed()
 	{
-		return target->IsPrimed();
+		return m_target->IsPrimed();
 	}
 }
