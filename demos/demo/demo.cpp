@@ -19,17 +19,17 @@ void PlayDemo(int argc, char** argv)
 {
 
 	// These are example video and audio sources used below.
-	const char* rawVideoFile = "../samples/carphone_qcif.y4m";
+	const char* rawVideoFile = "../../samples/carphone_qcif.y4m";
         // FIXME : unused
 	//int rawVideoWidth = 176; int rawVideoHeight = 162;
-	const char* rawAudioFile = "../samples/Vivaldi_s16le_2_channels_samplerate_11025.dat";
+	const char* rawAudioFile = "../../samples/Vivaldi_s16le_2_channels_samplerate_11025.dat";
 	const char* rawAudioFormat = "s16le"; int rawAudioSampleRate = 11025; int rawAudioChannels = 2;
 
-	const char* encodedVideoFile = "../samples/carphone.h264";
-	const char* encodedAudioFile = "../samples/Vivaldi_Sonata_eminor_.mp3";
+	const char* encodedVideoFile = "../../samples/carphone.h264";
+	const char* encodedAudioFile = "../../samples/Vivaldi_Sonata_eminor_.mp3";
 
-	const char* containerWithVideoAndAudioFile = "../samples/big_buck_bunny.mp4";
-	const char* containerWithAudioFile = "../samples/DesiJourney.wav";
+	const char* containerWithVideoAndAudioFile = "../../samples/big_buck_bunny.mp4";
+	const char* containerWithAudioFile = "../../samples/DesiJourney.wav";
 
 	// hard-code the settings here, but let them be overridden by the arguments
 	string inputAudioSource = "CONTAINER"; // options are RAW, ENCODED, CONTAINER, GENERATED
