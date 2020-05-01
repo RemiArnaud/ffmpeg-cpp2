@@ -26,11 +26,11 @@ namespace ffmpegcpp
 
 		bool done = false;
 
-		FrameSinkStream* output;
+		FrameSinkStream* m_output;
 		
 		AVCodecParserContext* parser = nullptr;
 
-		AVCodec* codec;
+		AVCodec* m_codec;
 		AVCodecContext* codecContext = nullptr;
 
 		int bufferSize;
@@ -38,7 +38,7 @@ namespace ffmpegcpp
 
 
 		AVFrame* decoded_frame = nullptr;
-		AVPacket* pkt = nullptr;
+		AVPacket* m_pkt = nullptr;
 		uint8_t* buffer = nullptr;
 
 		FILE* file;
