@@ -8,8 +8,12 @@ Changelog  Copyright Eric Bachard  2020/04/22
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
-NEW REPOSITORY + NEW TREE
+Final libffmpeg-cpp.a is less than 500 kB :-)
+Verified ALL demos. Seems to work well.
+Fixed : zillions of issues due to variable creation shadowing other variables ( -Wshadow )
+Created issue to inform Raveler about the fork
 
+NEW REPOSITORY + NEW TREE
 
 2020 May 1st
 
