@@ -1,0 +1,336 @@
+diff --git a/sources/Codecs/AudioCodec.cpp b/sources/Codecs/AudioCodec.cpp
+index 09d58ec..e89bdec 100644
+--- a/sources/Codecs/AudioCodec.cpp
++++ b/sources/Codecs/AudioCodec.cpp
+@@ -92,7 +92,7 @@ namespace ffmpegcpp
+ 	bool AudioCodec::IsChannelsSupported(int channels)
+ 	{
+ 		unsigned long int channelLayout = av_get_default_channel_layout(channels);
+-		const uint64_t *p = codecContext->codec->channel_layouts;
++		const uint64_t *p = m_codecContext->codec->channel_layouts;
+ 		while (*p)
+ 		{
+ 			if (channelLayout == *p) return true;
+@@ -103,7 +103,7 @@ namespace ffmpegcpp
+ 
+ 	bool AudioCodec::IsFormatSupported(AVSampleFormat format)
+ 	{
+-		const enum AVSampleFormat *p = codecContext->codec->sample_fmts;
++		const enum AVSampleFormat *p = m_codecContext->codec->sample_fmts;
+ 
+ 		while (*p != AV_SAMPLE_FMT_NONE)
+ 		{
+@@ -116,8 +116,8 @@ namespace ffmpegcpp
+ 	bool AudioCodec::IsSampleRateSupported(int sampleRate)
+ 	{
+ 		const int *p;
+-		if (!codecContext->codec->supported_samplerates) return true; // all sample rates are fair game
+-		p = codecContext->codec->supported_samplerates;
++		if (!m_codecContext->codec->supported_samplerates) return true; // all sample rates are fair game
++		p = m_codecContext->codec->supported_samplerates;
+ 		while (*p)
+ 		{
+ 			if (*p == sampleRate) return true;
+@@ -128,13 +128,13 @@ namespace ffmpegcpp
+ 
+ 	AVSampleFormat AudioCodec::GetDefaultSampleFormat()
+ 	{
+-		AVSampleFormat format = (codecContext->codec->sample_fmts ? codecContext->codec->sample_fmts[0] : AV_SAMPLE_FMT_FLTP);
++		AVSampleFormat format = (m_codecContext->codec->sample_fmts ? m_codecContext->codec->sample_fmts[0] : AV_SAMPLE_FMT_FLTP);
+ 		return format;
+ 	}
+ 
+ 	int AudioCodec::GetDefaultSampleRate()
+ 	{
+-		return select_sample_rate(codecContext->codec);
++		return select_sample_rate(m_codecContext->codec);
+ 	}
+ 
+ 	OpenCodec* AudioCodec::Open(int bitRate, AVSampleFormat format, int sampleRate)
+@@ -143,25 +143,25 @@ namespace ffmpegcpp
+         std::cout << "I'm at  : " << __FILE__ << __func__ << " bitRate : " << bitRate << " format : "  << format << "sampleRate : " << sampleRate << "\n";
+ #endif
+ 		// do some sanity checks
+-		if (!IsFormatSupported(format)) throw FFmpegException(std::string("Sample format " + string(av_get_sample_fmt_name(format)) + " is not supported by codec " + codecContext->codec->name).c_str());
+-		if (!IsSampleRateSupported(sampleRate)) throw FFmpegException(std::string("Sample rate " + to_string(sampleRate) + " is not supported by codec " + codecContext->codec->name).c_str());
++		if (!IsFormatSupported(format)) throw FFmpegException(std::string("Sample format " + string(av_get_sample_fmt_name(format)) + " is not supported by codec " + m_codecContext->codec->name).c_str());
++		if (!IsSampleRateSupported(sampleRate)) throw FFmpegException(std::string("Sample rate " + to_string(sampleRate) + " is not supported by codec " + m_codecContext->codec->name).c_str());
+ 
+ 		// if the codec is not an audio codec, we are doing it wrong!
+-		if (codecContext->codec->type != AVMEDIA_TYPE_AUDIO) throw FFmpegException(std::string("An audio output stream must be initialized with an audio codec").c_str());
++		if (m_codecContext->codec->type != AVMEDIA_TYPE_AUDIO) throw FFmpegException(std::string("An audio output stream must be initialized with an audio codec").c_str());
+ 
+ 		// set all data
+-		codecContext->bit_rate = bitRate;
+-		codecContext->sample_fmt = format;
+-		codecContext->sample_rate = sampleRate;
++		m_codecContext->bit_rate = bitRate;
++		m_codecContext->sample_fmt = format;
++		m_codecContext->sample_rate = sampleRate;
+ 
+ 		// deduce the best channel layout from the codec
+-		codecContext->channel_layout = select_channel_layout(codecContext->codec);
++		m_codecContext->channel_layout = select_channel_layout(m_codecContext->codec);
+ 
+ 		// finally the number of channels is derived from the layout
+-		codecContext->channels = av_get_channel_layout_nb_channels(codecContext->channel_layout);
++		m_codecContext->channels = av_get_channel_layout_nb_channels(m_codecContext->channel_layout);
+ 
+ 		// default flags
+-		codecContext->flags = 0;
++		m_codecContext->flags = 0;
+ 
+ #ifdef DEBUG
+         std::cout << "done ..." << "\n";
+diff --git a/sources/Codecs/Codec.cpp b/sources/Codecs/Codec.cpp
+index f4f9059..d7b3fd2 100644
+--- a/sources/Codecs/Codec.cpp
++++ b/sources/Codecs/Codec.cpp
+@@ -11,56 +11,56 @@ namespace ffmpegcpp
+ 	{
+ 		
+ 		AVCodec* codec = CodecDeducer::DeduceEncoder(codecName);
+-		codecContext = LoadContext(codec);
++		m_codecContext = LoadContext(codec);
+ 	}
+ 
+ 
+ 	Codec::Codec(AVCodecID codecId)
+ 	{
+ 		AVCodec* codec = CodecDeducer::DeduceEncoder(codecId);
+-		codecContext = LoadContext(codec);
++		m_codecContext = LoadContext(codec);
+ 	}
+ 
+ 	void Codec::SetOption(const char* name, const char* value)
+ 	{
+-		av_opt_set(codecContext->priv_data, name, value, 0);
++		av_opt_set(m_codecContext->priv_data, name, value, 0);
+ 	}
+ 
+ 	void Codec::SetOption(const char* name, int value)
+ 	{
+-		av_opt_set_int(codecContext->priv_data, name, value, 0);
++		av_opt_set_int(m_codecContext->priv_data, name, value, 0);
+ 	}
+ 
+ 	void Codec::SetOption(const char* name, double value)
+ 	{
+-		av_opt_set_double(codecContext->priv_data, name, value, 0);
++		av_opt_set_double(m_codecContext->priv_data, name, value, 0);
+ 	}
+ 
+ 	void Codec::SetGenericOption(const char* name, const char* value)
+ 	{
+-		av_opt_set(codecContext, name, value, 0);
++		av_opt_set(m_codecContext, name, value, 0);
+ 	}
+ 
+-	AVCodecContext* Codec::LoadContext(AVCodec* codec)
++	AVCodecContext* Codec::LoadContext(AVCodec* p_codec)
+ 	{
+-		AVCodecContext* codecContext = avcodec_alloc_context3(codec);
+-		if (!codecContext)
++		m_codecContext = avcodec_alloc_context3(p_codec);
++		if (!m_codecContext)
+ 		{
+ 			CleanUp();
+-			throw FFmpegException(std::string("Could not allocate video codec context for codec " + string(codec->name)).c_str());
++			throw FFmpegException(std::string("Could not allocate video codec context for codec " + string(p_codec->name)).c_str());
+ 		}
+ 
+ 		// copy the type
+-		codecContext->codec_type = codec->type;
++		m_codecContext->codec_type = p_codec->type;
+ 
+-		return codecContext;
++		return m_codecContext;
+ 	}
+ 
+ 	void Codec::CleanUp()
+ 	{
+-		if (codecContext != nullptr && !opened)
++		if (m_codecContext != nullptr && !opened)
+ 		{
+-			avcodec_free_context(&codecContext);
++			avcodec_free_context(&m_codecContext);
+ 		}
+ 	}
+ 
+@@ -71,7 +71,7 @@ namespace ffmpegcpp
+ 			throw FFmpegException(std::string("You can only open a codec once").c_str());
+ 		}
+ 
+-		int ret = avcodec_open2(codecContext, codecContext->codec, NULL);
++		int ret = avcodec_open2(m_codecContext, m_codecContext->codec, NULL);
+ 		if (ret < 0)
+ 		{
+ 			throw FFmpegException(std::string("Could not open codecContext for codec").c_str(), ret);
+@@ -82,7 +82,7 @@ namespace ffmpegcpp
+                 std::cerr << "codec Context is open (ouf)"  << "\n";
+ #endif
+ 
+-		return new OpenCodec(codecContext);
++		return new OpenCodec(m_codecContext);
+ 	}
+ 
+ 	Codec::~Codec()
+@@ -93,6 +93,6 @@ namespace ffmpegcpp
+ 	void Codec::SetGlobalContainerHeader()
+ 	{
+ 		if (opened) throw FFmpegException("This flag should be set before opening the codec");
+-		codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
++		m_codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+ 	}
+ }
+diff --git a/sources/Codecs/Codec.h b/sources/Codecs/Codec.h
+index 47c5f06..095ba21 100644
+--- a/sources/Codecs/Codec.h
++++ b/sources/Codecs/Codec.h
+@@ -25,7 +25,7 @@ namespace ffmpegcpp
+ 
+ 	protected:
+ 
+-		AVCodecContext* codecContext = nullptr;
++		AVCodecContext* m_codecContext;
+ 
+ 		OpenCodec* Open();
+ 
+diff --git a/sources/Codecs/JPGCodec.cpp b/sources/Codecs/JPGCodec.cpp
+index f869dc9..8fb2220 100644
+--- a/sources/Codecs/JPGCodec.cpp
++++ b/sources/Codecs/JPGCodec.cpp
+@@ -8,7 +8,7 @@ namespace ffmpegcpp
+ 	{
+ 
+ 		// we take the default image format of the codec
+-		codecContext->pix_fmt = codecContext->codec->pix_fmts[0];
++		m_codecContext->pix_fmt = m_codecContext->codec->pix_fmts[0];
+ 	}
+ 
+ 	void JPGCodec::SetCompressionLevel(int compressionLevel)
+diff --git a/sources/Codecs/MJPEGCodec.cpp b/sources/Codecs/MJPEGCodec.cpp
+index f9da477..a84de5d 100644
+--- a/sources/Codecs/MJPEGCodec.cpp
++++ b/sources/Codecs/MJPEGCodec.cpp
+@@ -8,7 +8,7 @@ namespace ffmpegcpp
+ //		: VideoCodec("mjpeg")
+ 	{
+ 
+-		codecContext->pix_fmt = AV_PIX_FMT_YUVJ420P;
++		m_codecContext->pix_fmt = AV_PIX_FMT_YUVJ420P;
+ 	}
+ 
+ // TODO : fixme, wrong parameters
+diff --git a/sources/Codecs/PNGCodec.cpp b/sources/Codecs/PNGCodec.cpp
+index ff0f522..461176b 100644
+--- a/sources/Codecs/PNGCodec.cpp
++++ b/sources/Codecs/PNGCodec.cpp
+@@ -8,7 +8,7 @@ namespace ffmpegcpp
+ 	{
+ 
+ 		// we take the default image format of the codec
+-		codecContext->pix_fmt = codecContext->codec->pix_fmts[0];
++		m_codecContext->pix_fmt = m_codecContext->codec->pix_fmts[0];
+ 	}
+ 
+ 	void PNGCodec::SetCompressionLevel(int compressionLevel)
+diff --git a/sources/Codecs/VideoCodec.cpp b/sources/Codecs/VideoCodec.cpp
+index 9da2018..364458d 100644
+--- a/sources/Codecs/VideoCodec.cpp
++++ b/sources/Codecs/VideoCodec.cpp
+@@ -48,8 +48,8 @@ namespace ffmpegcpp
+ 	void VideoCodec::SetQualityScale(int /* qscale */)
+ 	{
+ 
+-		codecContext->flags |= AV_CODEC_FLAG_QSCALE;
+-		codecContext->global_quality = FF_QP2LAMBDA * 0;
++		m_codecContext->flags |= AV_CODEC_FLAG_QSCALE;
++		m_codecContext->global_quality = FF_QP2LAMBDA * 0;
+ 	}
+ 
+ 	bool VideoCodec::IsPixelFormatSupported(AVPixelFormat format)
+@@ -63,7 +63,7 @@ namespace ffmpegcpp
+ #endif
+ 		if (format == AV_PIX_FMT_NONE) return true; // let the codec deal with this
+ 
+-		const enum AVPixelFormat *p = codecContext->codec->pix_fmts;
++		const enum AVPixelFormat *p = m_codecContext->codec->pix_fmts;
+ 		while (*p != AV_PIX_FMT_NONE)
+ 		{
+ 			if (*p == format) return true;
+@@ -78,8 +78,8 @@ namespace ffmpegcpp
+             std::cerr  << "I'm in : "<<  __func__ << "...  questionning framerate :  " <<  frameRate->num <<  " / " << frameRate->den << "\n";
+ #endif
+ 
+-		if (!codecContext->codec->supported_framerates) return true; // all frame rates are fair game
+-		const AVRational *p = codecContext->codec->supported_framerates;
++		if (!m_codecContext->codec->supported_framerates) return true; // all frame rates are fair game
++		const AVRational *p = m_codecContext->codec->supported_framerates;
+ 		while (p->num)
+ 		{
+ #ifdef DEBUG
+@@ -99,51 +99,51 @@ namespace ffmpegcpp
+ #endif
+ 
+ 		// sanity checks
+-		if (!IsPixelFormatSupported(format)) throw FFmpegException(std::string("Pixel format " + string(av_get_pix_fmt_name(format)) + " is not supported by codec " + codecContext->codec->name).c_str());
++		if (!IsPixelFormatSupported(format)) throw FFmpegException(std::string("Pixel format " + string(av_get_pix_fmt_name(format)) + " is not supported by codec " + m_codecContext->codec->name).c_str());
+ 
+                   std::cerr  <<  "IsPixelFormatSupported() done " << "\n";
+ 
+-		if (!IsFrameRateSupported(frameRate)) throw FFmpegException(std::string("Frame rate " + to_string(frameRate->num) + "/" + to_string(frameRate->den) + " is not supported by codec " + codecContext->codec->name).c_str());
++		if (!IsFrameRateSupported(frameRate)) throw FFmpegException(std::string("Frame rate " + to_string(frameRate->num) + "/" + to_string(frameRate->den) + " is not supported by codec " + m_codecContext->codec->name).c_str());
+ 
+                   std::cerr  <<  "IsFrameRateSupported() done " << "\n";
+ 
+ 		// if the codec is not an audio codec, we are doing it wrong!
+-		if (codecContext->codec->type != AVMEDIA_TYPE_VIDEO) throw FFmpegException(std::string("A video output stream must be initialized with a video codec").c_str());
++		if (m_codecContext->codec->type != AVMEDIA_TYPE_VIDEO) throw FFmpegException(std::string("A video output stream must be initialized with a video codec").c_str());
+ 
+ 		// set everything & open
+-		codecContext->width = width;
+-		codecContext->height = height;
+-		codecContext->pix_fmt = format;
++		m_codecContext->width = width;
++		m_codecContext->height = height;
++		m_codecContext->pix_fmt = format;
+ 
+ 		// FPS
+ 		AVRational time_base;
+ 		time_base.num = frameRate->den;
+ 		time_base.den = frameRate->num;
+-		codecContext->time_base = time_base;
++		m_codecContext->time_base = time_base;
+ 		AVRational framerate;
+ 		framerate.num = frameRate->num;
+ 		framerate.den = frameRate->den;
+-		codecContext->framerate = framerate;
++		m_codecContext->framerate = framerate;
+ 
+ 		return Codec::Open();
+ 	}
+ 
+ 	AVPixelFormat VideoCodec::GetDefaultPixelFormat()
+ 	{
+-		const enum AVPixelFormat *p = codecContext->codec->pix_fmts;
+-		if (*p == AV_PIX_FMT_NONE) throw FFmpegException(std::string("Codec " + string(codecContext->codec->name) + " does not have a default pixel format, you have to specify one").c_str());
++		const enum AVPixelFormat *p = m_codecContext->codec->pix_fmts;
++		if (*p == AV_PIX_FMT_NONE) throw FFmpegException(std::string("Codec " + string(m_codecContext->codec->name) + " does not have a default pixel format, you have to specify one").c_str());
+ 		return *p;
+ 	}
+ 
+ 	AVRational VideoCodec::GetClosestSupportedFrameRate(AVRational originalFrameRate)
+ 	{
+-		if (!codecContext->codec->supported_framerates)
++		if (!m_codecContext->codec->supported_framerates)
+ 		{
+ 			// make up a frame rate - there is no supported frame rate
+ 			return originalFrameRate;
+ 		};
+ 
+-		const AVRational *p = codecContext->codec->supported_framerates;
++		const AVRational *p = m_codecContext->codec->supported_framerates;
+ 		AVRational bestFrameRate;
+ 		bestFrameRate.num = 0;
+ 		bestFrameRate.den = 1;

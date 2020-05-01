@@ -8,7 +8,7 @@ namespace ffmpegcpp
 	{
 
 		// we take the default image format of the codec
-		codecContext->pix_fmt = codecContext->codec->pix_fmts[0];
+		m_codecContext->pix_fmt = m_codecContext->codec->pix_fmts[0];
 	}
 
 	void JPGCodec::SetCompressionLevel(int compressionLevel)
