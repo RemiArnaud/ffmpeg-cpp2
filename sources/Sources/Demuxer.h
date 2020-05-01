@@ -40,7 +40,7 @@ namespace ffmpegcpp
 
         bool done = false;
 
-        const char* fileName;
+        const char* m_fileName;
 
         InputStream* GetInputStream(int index);
         InputStream* GetInputStreamById(int streamId);

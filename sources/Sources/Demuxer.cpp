@@ -15,24 +15,24 @@ namespace ffmpegcpp
     {
     }
 
-    Demuxer::Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *format_opts)
+    Demuxer::Demuxer(const char* p_fileName, AVInputFormat* inputFormat, AVDictionary *format_opts)
     {
-        this->fileName = fileName;
+        this->m_fileName = p_fileName;
 
         // open input file, and allocate format context
         int ret;
 
-        if ((ret = avformat_open_input(&containerContext, fileName, inputFormat, &format_opts)) < 0)
+        if ((ret = avformat_open_input(&containerContext, m_fileName, inputFormat, &format_opts)) < 0)
         {
             CleanUp();
-            throw FFmpegException(std::string("Failed to open input container " + string(fileName)).c_str(), ret);
+            throw FFmpegException(std::string("Failed to open input container " + string(m_fileName)).c_str(), ret);
         }
 
         // retrieve stream information
         if ( (ret = (avformat_find_stream_info(containerContext, NULL))) < 0)
         {
             CleanUp();
-            throw FFmpegException(std::string("Failed to read streams from " + string(fileName)).c_str(), ret);
+            throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
         }
 
         inputStreams = new InputStream*[containerContext->nb_streams];
@@ -53,19 +53,19 @@ namespace ffmpegcpp
         pkt->size = 0;
     }
 
-    Demuxer::Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *format_opts, AVFormatContext * aContainerContext)
+    Demuxer::Demuxer(const char* p_fileName, AVInputFormat* inputFormat, AVDictionary *format_opts, AVFormatContext * aContainerContext)
     {
-        this->fileName = fileName;
+        this->m_fileName = p_fileName;
                 this->containerContext = aContainerContext;
 
         // open input file, and allocate format context
         int ret;
 
-        if ((ret = avformat_open_input(&containerContext, fileName, inputFormat, &format_opts)) < 0)
+        if ((ret = avformat_open_input(&containerContext, m_fileName, inputFormat, &format_opts)) < 0)
         {
             std::cerr << "Failed to open input container "  <<  "\n";
             CleanUp();
-            throw FFmpegException(std::string("Failed to open input container " + string(fileName)).c_str(), ret);
+            throw FFmpegException(std::string("Failed to open input container " + string(m_fileName)).c_str(), ret);
         }
 #ifdef DEBUG
         else
@@ -76,13 +76,13 @@ namespace ffmpegcpp
         if ( (ret = (avformat_find_stream_info(containerContext, NULL))) < 0)
         {
             CleanUp();
-            throw FFmpegException(std::string("Failed to read streams from " + string(fileName)).c_str(), ret);
+            throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
         }
 #ifdef DEBUG
         else
             std::cerr << "avformat_find_stream_info() DONE"  <<  "\n";
 #endif
-        av_dump_format(containerContext , 0 , fileName , 0 );
+        av_dump_format(containerContext , 0 , m_fileName , 0 );
 #ifdef DEBUG
         std::cerr << "av_dump_format() DONE"  <<  "\n";
 #endif
@@ -179,7 +179,7 @@ namespace ffmpegcpp
 
         if (ret < 0)
         {
-            throw FFmpegException(std::string("Could not find " + string(av_get_media_type_string(AVMEDIA_TYPE_AUDIO)) + " stream in input file " + fileName).c_str(), ret);
+            throw FFmpegException(std::string("Could not find " + string(av_get_media_type_string(AVMEDIA_TYPE_AUDIO)) + " stream in input file " + m_fileName).c_str(), ret);
         }
 
         int streamIndex = ret;
@@ -192,7 +192,7 @@ namespace ffmpegcpp
 
         if (ret < 0)
         {
-            throw FFmpegException(std::string("Could not find " + string(av_get_media_type_string(AVMEDIA_TYPE_VIDEO)) + " stream in input file " + fileName).c_str(), ret);
+            throw FFmpegException(std::string("Could not find " + string(av_get_media_type_string(AVMEDIA_TYPE_VIDEO)) + " stream in input file " + m_fileName).c_str(), ret);
         }
 
         int streamIndex = ret;
@@ -411,7 +411,7 @@ namespace ffmpegcpp
 
     const char* Demuxer::GetFileName()
     {
-        return fileName;
+        return m_fileName;
     }
 
 
