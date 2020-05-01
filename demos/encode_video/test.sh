@@ -9,7 +9,7 @@
 
 
 g++ -g -DDEBUG -I.. -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o testing_webcam encode_video.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavfilter libavformat libavdevice`
