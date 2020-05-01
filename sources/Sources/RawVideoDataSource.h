@@ -26,12 +26,12 @@ namespace ffmpegcpp
 
 	private:
 
-		void Init(int width, int height, AVPixelFormat sourcePixelFormat, AVPixelFormat targetPixelFormat, int framesPerSecond, FrameSink* output);
+		void Init(int width, int height, AVPixelFormat m_sourcePixelFormat, AVPixelFormat targetPixelFormat, int framesPerSecond, FrameSink* output);
 		void CleanUp();
 
-		AVPixelFormat sourcePixelFormat;
+		AVPixelFormat m_sourcePixelFormat;
 
-		FrameSinkStream* output;
+		FrameSinkStream* m_output;
 
 		StreamData metaData;
 

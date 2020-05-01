@@ -15,10 +15,10 @@ namespace ffmpegcpp
 		Init(width, height, sourcePixelFormat, targetPixelFormat, framesPerSecond, output);
 	}
 
-	void RawVideoDataSource::Init(int width, int height, AVPixelFormat sourcePixelFormat, AVPixelFormat targetPixelFormat, int framesPerSecond, FrameSink* output)
+	void RawVideoDataSource::Init(int width, int height, AVPixelFormat p_sourcePixelFormat, AVPixelFormat targetPixelFormat, int framesPerSecond, FrameSink* p_output)
 	{
-		this->output = output->CreateStream();
-		this->sourcePixelFormat = sourcePixelFormat;
+		this->m_output = p_output->CreateStream();
+		this->m_sourcePixelFormat = p_sourcePixelFormat;
 
 		// set up the time base
 		metaData.timeBase.num = 1;
@@ -83,19 +83,19 @@ namespace ffmpegcpp
 		// if the source and target pixel format are the same, we don't do any conversions, we just copy
 		// but we use sws_scale anyway because we need to convert to the internal line_size format of frame
 		swsContext = sws_getCachedContext(swsContext,
-			frame->width, frame->height, sourcePixelFormat,
+			frame->width, frame->height, m_sourcePixelFormat,
 			frame->width, frame->height, (AVPixelFormat)frame->format,
 			0, 0, 0, 0);
 		sws_scale(swsContext, (const uint8_t * const *)&data, in_linesize, 0,
 			frame->height, frame->data, frame->linesize);
 
 		// send to the output
-		output->WriteFrame(frame, &metaData);
+		m_output->WriteFrame(frame, &metaData);
 	}
 
 	void RawVideoDataSource::Close()
 	{
-		output->Close();
+		m_output->Close();
 	}
 
 	int RawVideoDataSource::GetWidth()
@@ -110,6 +110,6 @@ namespace ffmpegcpp
 
 	bool RawVideoDataSource::IsPrimed()
 	{
-		return output->IsPrimed();
+		return m_output->IsPrimed();
 	}
 }
