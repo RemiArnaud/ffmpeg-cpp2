@@ -75,10 +75,16 @@ Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMin
 FIRST : install all dependencies : 
 
 g++ (7.x or superior)
+
 cmake
+
 ffmpeg : version 4.1+
+
 libavutils-dev libavformat-dev libavcodec-dev libavfilter-dev libswresample-dev libswscale-dev (and dependencies)
+
 libmp3lame-dev libmp3lame0 libv4l-dev v4l-utils libx264-dev libvpx-dev
+
+
 
 optional : 
 
@@ -88,11 +94,17 @@ optional :
 To build :
 
 git clone https://framagit.org/ericb/ffmpeg-cpp2.git
+
 cd ffmpeg-cpp2
+
 mkdir build
+
 cd build
+
 cmake ..
+
 make
+
 => if nothing wrong occurs, the libffmpeg-cpp.a (static) should be built
 
 To test :
