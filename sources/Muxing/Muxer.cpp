@@ -10,14 +10,14 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	Muxer::Muxer(const char* fileName)
+	Muxer::Muxer(const char* p_fileName)
 	{
-		this->fileName = fileName;
+		this->m_fileName = p_fileName;
 #ifdef DBBUG
                 std::cerr  <<  "Currently in : "  << __func__ << "   creating new muxer " <<  "\n";
 #endif
 		/* allocate the output media context */
-		avformat_alloc_output_context2(&containerContext, NULL, NULL, fileName);
+		avformat_alloc_output_context2(&containerContext, NULL, NULL, std::string(m_fileName).c_str());
 #ifdef DBBUG
                 std::cerr  <<  "avformat_alloc_output_context2 done "  <<  "\n";
                 std::cerr  <<  "containerContext =  "  << containerContext << "\n";
@@ -25,12 +25,12 @@ namespace ffmpegcpp
 		if (!containerContext)
 		{
 			printf("WARNING: Could not deduce output format from file extension: using MP4. as default\n");
-			avformat_alloc_output_context2(&containerContext, NULL, "mp4", fileName);
+			avformat_alloc_output_context2(&containerContext, NULL, "mp4", std::string(m_fileName).c_str());
 		}
 
 		if (!containerContext)
 		{
-			throw FFmpegException(std::string("Could not allocate container context for " + this->fileName).c_str());
+			throw FFmpegException(std::string("Could not allocate container context for " + this->m_fileName).c_str());
 		}
 
 		// the format of the container - not necessarily the same as the fileName suggests, see above
@@ -162,7 +162,7 @@ namespace ffmpegcpp
 					AVPacket* tmp_pkt = packetQueue[i];
 
 					// Write the compressed frame to the media file.
-					int ret = av_interleaved_write_frame(containerContext, tmp_pkt);
+					ret = av_interleaved_write_frame(containerContext, tmp_pkt);
 					if (ret < 0)
 					{
 						throw FFmpegException(std::string("Error while writing frame to output container").c_str(), ret);
@@ -190,7 +190,7 @@ namespace ffmpegcpp
 		// we are opened now - write this packet!
 		if (opened)
 		{
-			int ret = av_interleaved_write_frame(containerContext, pkt);
+			ret = av_interleaved_write_frame(containerContext, pkt);
 			if (ret < 0)
 			{
 				throw FFmpegException(std::string("Error while writing frame to output container").c_str(), ret);
@@ -204,10 +204,10 @@ namespace ffmpegcpp
 		// open the output file, if needed
 		if (!(containerFormat->flags & AVFMT_NOFILE))
 		{
-			int ret = avio_open(&containerContext->pb, fileName.c_str(), AVIO_FLAG_WRITE);
+			int ret = avio_open(&containerContext->pb, m_fileName.c_str(), AVIO_FLAG_WRITE);
 			if (ret < 0)
 			{
-				throw FFmpegException(std::string("Could not open file for container " + fileName).c_str(), ret);
+				throw FFmpegException(std::string("Could not open file for container " + m_fileName).c_str(), ret);
 			}
 		}
 
@@ -215,7 +215,7 @@ namespace ffmpegcpp
 		int ret = avformat_write_header(containerContext, NULL);
 		if (ret < 0)
 		{
-			throw FFmpegException(std::string("Error when writing header to output file " + fileName).c_str(), ret);
+			throw FFmpegException(std::string("Error when writing header to output file " + m_fileName).c_str(), ret);
 		}
 	}
 

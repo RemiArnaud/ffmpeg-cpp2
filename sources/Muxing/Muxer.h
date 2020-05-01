@@ -41,7 +41,7 @@ namespace ffmpegcpp {
 
 		AVFormatContext* containerContext = nullptr;
 
-		std::string fileName;
+		std::string m_fileName;
 
 		void CleanUp();
 
