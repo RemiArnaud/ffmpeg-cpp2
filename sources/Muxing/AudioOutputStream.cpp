@@ -4,8 +4,8 @@
 using namespace std;
 namespace ffmpegcpp
 {
-	AudioOutputStream::AudioOutputStream(Muxer* muxer, Codec* codec)
-		: OutputStream(muxer, codec)
+	AudioOutputStream::AudioOutputStream(Muxer* p_muxer, Codec* p_codec)
+		: OutputStream(p_muxer, p_codec)
 	{
 	}
 

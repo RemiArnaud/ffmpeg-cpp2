@@ -4,10 +4,10 @@
 namespace ffmpegcpp
 {
 
-	FrameSinkStream::FrameSinkStream(FrameWriter* frameSink, int streamIndex)
+	FrameSinkStream::FrameSinkStream(FrameWriter* p_frameSink, int p_streamIndex)
 	{
-		this->frameSink = frameSink;
-		this->streamIndex = streamIndex;
+		this->frameSink = p_frameSink;
+		this->streamIndex = p_streamIndex;
 	}
 
 	void FrameSinkStream::WriteFrame(AVFrame* frame, StreamData* metaData)

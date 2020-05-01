@@ -71,9 +71,9 @@ namespace ffmpegcpp
 		return true;
 	}
 
-	void VideoFilterInput::SetMetaData(StreamData* metaData)
+	void VideoFilterInput::SetMetaData(StreamData* p_metaData)
 	{
-		this->metaData = metaData;
+		this->metaData = p_metaData;
 	}
 
 	StreamData* VideoFilterInput::GetMetaData()

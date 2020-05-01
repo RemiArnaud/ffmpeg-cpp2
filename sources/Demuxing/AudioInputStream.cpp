@@ -4,8 +4,8 @@
 
 namespace ffmpegcpp
 {
-	AudioInputStream::AudioInputStream(AVFormatContext* format, AVStream* stream)
-		: InputStream(format, stream)
+	AudioInputStream::AudioInputStream(AVFormatContext* p_format, AVStream* p_stream)
+		: InputStream(p_format, p_stream)
 	{
 	}
 
@@ -36,7 +36,7 @@ namespace ffmpegcpp
 
 		info.timeBase = tb;
 
-		AVCodecContext* codecContext = avcodec_alloc_context3(NULL);
+		codecContext = avcodec_alloc_context3(NULL);
 		if (!codecContext) throw new FFmpegException(std::string("Failed to allocate temporary codec context.").c_str());
 		int ret = avcodec_parameters_to_context(codecContext, stream->codecpar);
 		if (ret < 0)

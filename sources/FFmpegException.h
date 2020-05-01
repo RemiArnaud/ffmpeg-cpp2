@@ -10,7 +10,7 @@ namespace ffmpegcpp
 	    public:
 		explicit FFmpegException(const char * error);
 
-		explicit FFmpegException(const char * error, int returnValue);
+		explicit FFmpegException(const char * _error, int returnValue);
 
 		virtual const char* what() const noexcept
 		{

@@ -4,8 +4,8 @@
 
 namespace ffmpegcpp
 {
-	VideoInputStream::VideoInputStream(AVFormatContext* format, AVStream* stream)
-		: InputStream(format, stream)
+	VideoInputStream::VideoInputStream(AVFormatContext* p_format, AVStream* p_stream)
+		: InputStream(p_format, p_stream)
 	{
 	}
 
@@ -36,7 +36,7 @@ namespace ffmpegcpp
 		info.timeBase = tb;
 		info.frameRate = fr;
 
-		AVCodecContext* codecContext = avcodec_alloc_context3(NULL);
+		codecContext = avcodec_alloc_context3(NULL);
 		if (!codecContext) throw new FFmpegException("Failed to allocate temporary codec context.");
 		int ret = avcodec_parameters_to_context(codecContext, stream->codecpar);
 		if (ret < 0)

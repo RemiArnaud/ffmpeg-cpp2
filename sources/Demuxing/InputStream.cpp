@@ -6,10 +6,10 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	InputStream::InputStream(AVFormatContext* format, AVStream* stream)
+	InputStream::InputStream(AVFormatContext* p_format, AVStream* p_stream)
 	{
-		this->stream = stream;
-		this->format = format;
+		this->stream = p_stream;
+		this->format = p_format;
 
 		// find decoder for the stream
 		AVCodec* codec = CodecDeducer::DeduceDecoder(stream->codecpar->codec_id);
@@ -113,7 +113,7 @@ namespace ffmpegcpp
 		AVRational fr = overrideFrameRate;
 		if (!fr.num) fr = av_guess_frame_rate(format, stream, NULL);
 
-		StreamData* metaData = new StreamData();
+		metaData = new StreamData();
 		metaData->timeBase = tb;
 		metaData->frameRate = fr;
 

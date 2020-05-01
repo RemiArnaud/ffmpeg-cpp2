@@ -8,33 +8,33 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer)
+	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer)
 	{
-		this->closedCodec = codec;
+		this->closedCodec = p_codec;
 
 		// create an output stream
-		this->output = new VideoOutputStream(muxer, codec);
-		muxer->AddOutputStream(output);
+		this->output = new VideoOutputStream(p_muxer, p_codec);
+		p_muxer->AddOutputStream(output);
 
 		// this one is used to make sure we only allow one frame sink stream to be generated
 		oneInputFrameSink = new OneInputFrameSink(this, AVMEDIA_TYPE_VIDEO);
 	}
 
-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer, AVPixelFormat format)
-		: VideoEncoder(codec, muxer)
+	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer, AVPixelFormat format)
+		: VideoEncoder(p_codec, p_muxer)
 	{
 		finalPixelFormat = format;
 	}
 
-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer, AVRational frameRate)
-		: VideoEncoder(codec, muxer)
+	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer, AVRational frameRate)
+		: VideoEncoder(p_codec, p_muxer)
 	{
 		finalFrameRate = frameRate;
 		finalFrameRateSet = true;
 	}
 
-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer, AVRational frameRate, AVPixelFormat format)
-		: VideoEncoder(codec, muxer)
+	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer, AVRational frameRate, AVPixelFormat format)
+		: VideoEncoder(p_codec, p_muxer)
 	{
 		finalPixelFormat = format;
 		finalFrameRate = frameRate;

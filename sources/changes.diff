@@ -1,0 +1,323 @@
+diff --git a/sources/Demuxing/AudioInputStream.cpp b/sources/Demuxing/AudioInputStream.cpp
+index 4a07072..0626331 100644
+--- a/sources/Demuxing/AudioInputStream.cpp
++++ b/sources/Demuxing/AudioInputStream.cpp
+@@ -4,8 +4,8 @@
+ 
+ namespace ffmpegcpp
+ {
+-	AudioInputStream::AudioInputStream(AVFormatContext* format, AVStream* stream)
+-		: InputStream(format, stream)
++	AudioInputStream::AudioInputStream(AVFormatContext* p_format, AVStream* p_stream)
++		: InputStream(p_format, p_stream)
+ 	{
+ 	}
+ 
+@@ -36,7 +36,7 @@ namespace ffmpegcpp
+ 
+ 		info.timeBase = tb;
+ 
+-		AVCodecContext* codecContext = avcodec_alloc_context3(NULL);
++		codecContext = avcodec_alloc_context3(NULL);
+ 		if (!codecContext) throw new FFmpegException(std::string("Failed to allocate temporary codec context.").c_str());
+ 		int ret = avcodec_parameters_to_context(codecContext, stream->codecpar);
+ 		if (ret < 0)
+diff --git a/sources/Demuxing/InputStream.cpp b/sources/Demuxing/InputStream.cpp
+index 3cafaef..8b74e03 100644
+--- a/sources/Demuxing/InputStream.cpp
++++ b/sources/Demuxing/InputStream.cpp
+@@ -6,10 +6,10 @@ using namespace std;
+ 
+ namespace ffmpegcpp
+ {
+-	InputStream::InputStream(AVFormatContext* format, AVStream* stream)
++	InputStream::InputStream(AVFormatContext* p_format, AVStream* p_stream)
+ 	{
+-		this->stream = stream;
+-		this->format = format;
++		this->stream = p_stream;
++		this->format = p_format;
+ 
+ 		// find decoder for the stream
+ 		AVCodec* codec = CodecDeducer::DeduceDecoder(stream->codecpar->codec_id);
+@@ -113,7 +113,7 @@ namespace ffmpegcpp
+ 		AVRational fr = overrideFrameRate;
+ 		if (!fr.num) fr = av_guess_frame_rate(format, stream, NULL);
+ 
+-		StreamData* metaData = new StreamData();
++		metaData = new StreamData();
+ 		metaData->timeBase = tb;
+ 		metaData->frameRate = fr;
+ 
+diff --git a/sources/Demuxing/VideoInputStream.cpp b/sources/Demuxing/VideoInputStream.cpp
+index ebd9308..538a290 100644
+--- a/sources/Demuxing/VideoInputStream.cpp
++++ b/sources/Demuxing/VideoInputStream.cpp
+@@ -4,8 +4,8 @@
+ 
+ namespace ffmpegcpp
+ {
+-	VideoInputStream::VideoInputStream(AVFormatContext* format, AVStream* stream)
+-		: InputStream(format, stream)
++	VideoInputStream::VideoInputStream(AVFormatContext* p_format, AVStream* p_stream)
++		: InputStream(p_format, p_stream)
+ 	{
+ 	}
+ 
+@@ -36,7 +36,7 @@ namespace ffmpegcpp
+ 		info.timeBase = tb;
+ 		info.frameRate = fr;
+ 
+-		AVCodecContext* codecContext = avcodec_alloc_context3(NULL);
++		codecContext = avcodec_alloc_context3(NULL);
+ 		if (!codecContext) throw new FFmpegException("Failed to allocate temporary codec context.");
+ 		int ret = avcodec_parameters_to_context(codecContext, stream->codecpar);
+ 		if (ret < 0)
+diff --git a/sources/FFmpegException.cpp b/sources/FFmpegException.cpp
+index 43d8ef7..2572dd0 100644
+--- a/sources/FFmpegException.cpp
++++ b/sources/FFmpegException.cpp
+@@ -4,15 +4,15 @@ using namespace std;
+ 
+ namespace ffmpegcpp
+ {
+-	FFmpegException::FFmpegException(const char * error) : exception ()
++	FFmpegException::FFmpegException(const char * p_error) : exception ()
+ 	{
+-                std::string(error).c_str();
++                std::string(p_error).c_str();
+ 	}
+ 
+-	FFmpegException::FFmpegException(const char * error, int returnValue)
++	FFmpegException::FFmpegException(const char * p_error, int returnValue)
+ 		: exception()
+ 	{
+-			std::string(std::string(error) + ": " + av_make_error_string(this->error, AV_ERROR_MAX_STRING_SIZE, returnValue)).c_str();
++			std::string(std::string(p_error) + ": " + av_make_error_string(this->error, AV_ERROR_MAX_STRING_SIZE, returnValue)).c_str();
+ 	}
+ }
+ 
+diff --git a/sources/FFmpegException.h b/sources/FFmpegException.h
+index 5d0d868..cd4b870 100644
+--- a/sources/FFmpegException.h
++++ b/sources/FFmpegException.h
+@@ -10,7 +10,7 @@ namespace ffmpegcpp
+ 	    public:
+ 		explicit FFmpegException(const char * error);
+ 
+-		explicit FFmpegException(const char * error, int returnValue);
++		explicit FFmpegException(const char * _error, int returnValue);
+ 
+ 		virtual const char* what() const noexcept
+ 		{
+diff --git a/sources/FrameContainer.cpp b/sources/FrameContainer.cpp
+index 5adb3ca..eb6fae6 100644
+--- a/sources/FrameContainer.cpp
++++ b/sources/FrameContainer.cpp
+@@ -5,13 +5,15 @@ using namespace std;
+ 
+ namespace ffmpegcpp
+ {
+-	FrameContainer::FrameContainer(AVFrame* frame, AVRational* timeBase)
++	FrameContainer::FrameContainer(AVFrame* p_frame, AVRational* p_timeBase)
+ 	{
+-		AVFrame *tmp = av_frame_clone(frame);
++		AVFrame *tmp = av_frame_clone(p_frame);
++
+ 		if (!tmp) throw new FFmpegException("Failed to clone frame");
+-		av_frame_unref(frame);
++		    av_frame_unref(frame);
++
+ 		this->frame = tmp;
+-		this->timeBase = timeBase;
++		this->timeBase = p_timeBase;
+ 	}
+ 
+ 	FrameContainer::~FrameContainer()
+diff --git a/sources/FrameSinks/AudioEncoder.cpp b/sources/FrameSinks/AudioEncoder.cpp
+index 3521299..ad99848 100644
+--- a/sources/FrameSinks/AudioEncoder.cpp
++++ b/sources/FrameSinks/AudioEncoder.cpp
+@@ -8,20 +8,20 @@ using namespace std;
+ namespace ffmpegcpp
+ {
+ 
+-	AudioEncoder::AudioEncoder(AudioCodec* codec, Muxer* muxer)
++	AudioEncoder::AudioEncoder(AudioCodec* p_codec, Muxer* p_muxer)
+ 	{
+-		this->closedCodec = codec;
++		this->closedCodec = p_codec;
+ 
+ 		// create an output stream
+-		output = new AudioOutputStream(muxer, codec);
+-		muxer->AddOutputStream(output);
++		output = new AudioOutputStream(p_muxer, p_codec);
++		p_muxer->AddOutputStream(output);
+ 
+ 		// this one is used to make sure we only allow one frame sink stream to be generated
+ 		oneInputFrameSink = new OneInputFrameSink(this, AVMEDIA_TYPE_AUDIO);
+ 	}
+ 
+-	AudioEncoder::AudioEncoder(AudioCodec* codec, Muxer* muxer, int bitRate)
+-		: AudioEncoder(codec, muxer)
++	AudioEncoder::AudioEncoder(AudioCodec* p_codec, Muxer* p_muxer, int bitRate)
++		: AudioEncoder(p_codec, p_muxer)
+ 	{
+ 		finalBitRate = bitRate;
+ 	}
+diff --git a/sources/FrameSinks/FrameSinkStream.cpp b/sources/FrameSinks/FrameSinkStream.cpp
+index 331bb74..b22e74d 100644
+--- a/sources/FrameSinks/FrameSinkStream.cpp
++++ b/sources/FrameSinks/FrameSinkStream.cpp
+@@ -4,10 +4,10 @@
+ namespace ffmpegcpp
+ {
+ 
+-	FrameSinkStream::FrameSinkStream(FrameWriter* frameSink, int streamIndex)
++	FrameSinkStream::FrameSinkStream(FrameWriter* p_frameSink, int p_streamIndex)
+ 	{
+-		this->frameSink = frameSink;
+-		this->streamIndex = streamIndex;
++		this->frameSink = p_frameSink;
++		this->streamIndex = p_streamIndex;
+ 	}
+ 
+ 	void FrameSinkStream::WriteFrame(AVFrame* frame, StreamData* metaData)
+diff --git a/sources/FrameSinks/OneInputFrameSink.cpp b/sources/FrameSinks/OneInputFrameSink.cpp
+index 5a1fa7b..f412ad6 100644
+--- a/sources/FrameSinks/OneInputFrameSink.cpp
++++ b/sources/FrameSinks/OneInputFrameSink.cpp
+@@ -6,10 +6,10 @@ using namespace std;
+ namespace ffmpegcpp
+ {
+ 
+-	OneInputFrameSink::OneInputFrameSink(FrameWriter* writer, AVMediaType mediaType)
++	OneInputFrameSink::OneInputFrameSink(FrameWriter* p_writer, AVMediaType p_mediaType)
+ 	{
+-		this->writer = writer;
+-		this->mediaType = mediaType;
++		this->writer = p_writer;
++		this->mediaType = p_mediaType;
+ 	}
+ 
+ 	FrameSinkStream* OneInputFrameSink::CreateStream()
+diff --git a/sources/FrameSinks/VideoEncoder.cpp b/sources/FrameSinks/VideoEncoder.cpp
+index 4b9bfca..685cd33 100644
+--- a/sources/FrameSinks/VideoEncoder.cpp
++++ b/sources/FrameSinks/VideoEncoder.cpp
+@@ -8,33 +8,33 @@ using namespace std;
+ namespace ffmpegcpp
+ {
+ 
+-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer)
++	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer)
+ 	{
+-		this->closedCodec = codec;
++		this->closedCodec = p_codec;
+ 
+ 		// create an output stream
+-		this->output = new VideoOutputStream(muxer, codec);
+-		muxer->AddOutputStream(output);
++		this->output = new VideoOutputStream(p_muxer, p_codec);
++		p_muxer->AddOutputStream(output);
+ 
+ 		// this one is used to make sure we only allow one frame sink stream to be generated
+ 		oneInputFrameSink = new OneInputFrameSink(this, AVMEDIA_TYPE_VIDEO);
+ 	}
+ 
+-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer, AVPixelFormat format)
+-		: VideoEncoder(codec, muxer)
++	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer, AVPixelFormat format)
++		: VideoEncoder(p_codec, p_muxer)
+ 	{
+ 		finalPixelFormat = format;
+ 	}
+ 
+-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer, AVRational frameRate)
+-		: VideoEncoder(codec, muxer)
++	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer, AVRational frameRate)
++		: VideoEncoder(p_codec, p_muxer)
+ 	{
+ 		finalFrameRate = frameRate;
+ 		finalFrameRateSet = true;
+ 	}
+ 
+-	VideoEncoder::VideoEncoder(VideoCodec* codec, Muxer* muxer, AVRational frameRate, AVPixelFormat format)
+-		: VideoEncoder(codec, muxer)
++	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer, AVRational frameRate, AVPixelFormat format)
++		: VideoEncoder(p_codec, p_muxer)
+ 	{
+ 		finalPixelFormat = format;
+ 		finalFrameRate = frameRate;
+diff --git a/sources/FrameSinks/VideoFilterInput.cpp b/sources/FrameSinks/VideoFilterInput.cpp
+index 22614d3..3222090 100644
+--- a/sources/FrameSinks/VideoFilterInput.cpp
++++ b/sources/FrameSinks/VideoFilterInput.cpp
+@@ -71,9 +71,9 @@ namespace ffmpegcpp
+ 		return true;
+ 	}
+ 
+-	void VideoFilterInput::SetMetaData(StreamData* metaData)
++	void VideoFilterInput::SetMetaData(StreamData* p_metaData)
+ 	{
+-		this->metaData = metaData;
++		this->metaData = p_metaData;
+ 	}
+ 
+ 	StreamData* VideoFilterInput::GetMetaData()
+diff --git a/sources/Muxing/AudioOutputStream.cpp b/sources/Muxing/AudioOutputStream.cpp
+index 8a8c11f..a77be3b 100644
+--- a/sources/Muxing/AudioOutputStream.cpp
++++ b/sources/Muxing/AudioOutputStream.cpp
+@@ -4,8 +4,8 @@
+ using namespace std;
+ namespace ffmpegcpp
+ {
+-	AudioOutputStream::AudioOutputStream(Muxer* muxer, Codec* codec)
+-		: OutputStream(muxer, codec)
++	AudioOutputStream::AudioOutputStream(Muxer* p_muxer, Codec* p_codec)
++		: OutputStream(p_muxer, p_codec)
+ 	{
+ 	}
+ 
+diff --git a/sources/Muxing/OutputStream.cpp b/sources/Muxing/OutputStream.cpp
+index eddf228..341faf5 100644
+--- a/sources/Muxing/OutputStream.cpp
++++ b/sources/Muxing/OutputStream.cpp
+@@ -5,10 +5,10 @@ using namespace std;
+ 
+ namespace ffmpegcpp
+ {
+-	OutputStream::OutputStream(Muxer* muxer, Codec* codec)
++	OutputStream::OutputStream(Muxer* p_muxer, Codec* p_codec)
+ 	{
+-		this->muxer = muxer;
+-		this->codec = codec;
++		this->muxer = p_muxer;
++		this->codec = p_codec;
+ 	}
+ 
+ 	void OutputStream::SendPacketToMuxer(AVPacket* pkt)
+diff --git a/sources/OpenCodec.cpp b/sources/OpenCodec.cpp
+index a2ca5ad..ad83ac2 100644
+--- a/sources/OpenCodec.cpp
++++ b/sources/OpenCodec.cpp
+@@ -9,14 +9,14 @@ using namespace std;
+ 
+ namespace ffmpegcpp
+ {
+-	OpenCodec::OpenCodec(AVCodecContext* context)
++	OpenCodec::OpenCodec(AVCodecContext* p_context)
+ 	{
+-		if (!avcodec_is_open(context))
++		if (!avcodec_is_open(p_context))
+ 		{
+-			throw FFmpegException(std::string("Codec context for " + string(context->codec->name) + " hasn't been opened yet").c_str());
++			throw FFmpegException(std::string("Codec context for " + string(p_context->codec->name) + " hasn't been opened yet").c_str());
+ 		}
+ 
+-		this->context = context;
++		this->context = p_context;
+ 	}
+ 
+ 	OpenCodec::~OpenCodec()

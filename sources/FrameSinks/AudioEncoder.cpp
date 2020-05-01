@@ -8,20 +8,20 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	AudioEncoder::AudioEncoder(AudioCodec* codec, Muxer* muxer)
+	AudioEncoder::AudioEncoder(AudioCodec* p_codec, Muxer* p_muxer)
 	{
-		this->closedCodec = codec;
+		this->closedCodec = p_codec;
 
 		// create an output stream
-		output = new AudioOutputStream(muxer, codec);
-		muxer->AddOutputStream(output);
+		output = new AudioOutputStream(p_muxer, p_codec);
+		p_muxer->AddOutputStream(output);
 
 		// this one is used to make sure we only allow one frame sink stream to be generated
 		oneInputFrameSink = new OneInputFrameSink(this, AVMEDIA_TYPE_AUDIO);
 	}
 
-	AudioEncoder::AudioEncoder(AudioCodec* codec, Muxer* muxer, int bitRate)
-		: AudioEncoder(codec, muxer)
+	AudioEncoder::AudioEncoder(AudioCodec* p_codec, Muxer* p_muxer, int bitRate)
+		: AudioEncoder(p_codec, p_muxer)
 	{
 		finalBitRate = bitRate;
 	}

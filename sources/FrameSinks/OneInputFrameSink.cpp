@@ -6,10 +6,10 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	OneInputFrameSink::OneInputFrameSink(FrameWriter* writer, AVMediaType mediaType)
+	OneInputFrameSink::OneInputFrameSink(FrameWriter* p_writer, AVMediaType p_mediaType)
 	{
-		this->writer = writer;
-		this->mediaType = mediaType;
+		this->writer = p_writer;
+		this->mediaType = p_mediaType;
 	}
 
 	FrameSinkStream* OneInputFrameSink::CreateStream()

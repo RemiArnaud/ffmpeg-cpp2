@@ -1,0 +1,33 @@
+diff --git a/sources/AudioFormatConverter.cpp b/sources/AudioFormatConverter.cpp
+index f4ab60b..a0dd271 100644
+--- a/sources/AudioFormatConverter.cpp
++++ b/sources/AudioFormatConverter.cpp
+@@ -4,10 +4,10 @@
+ 
+ namespace ffmpegcpp
+ {
+-	AudioFormatConverter::AudioFormatConverter(ConvertedAudioProcessor* writer, AVCodecContext* codecContext)
++	AudioFormatConverter::AudioFormatConverter(ConvertedAudioProcessor* writer, AVCodecContext* p_codecContext)
+ 	{
+ 		this->output = writer;
+-		this->codecContext = codecContext;
++		this->codecContext = p_codecContext;
+ 
+ 		converted_frame = av_frame_alloc();
+ 		int ret;
+diff --git a/sources/Muxing/AudioOutputStream.cpp b/sources/Muxing/AudioOutputStream.cpp
+index b79c564..8a8c11f 100644
+--- a/sources/Muxing/AudioOutputStream.cpp
++++ b/sources/Muxing/AudioOutputStream.cpp
+@@ -9,9 +9,9 @@ namespace ffmpegcpp
+ 	{
+ 	}
+ 
+-	void AudioOutputStream::OpenStream(AVStream* stream, int containerFlags)
++	void AudioOutputStream::OpenStream(AVStream* p_stream, int containerFlags)
+ 	{
+-		this->stream = stream;
++		this->stream = p_stream;
+ 
+ 		// special case for certain containers
+ 		if (containerFlags & AVFMT_GLOBALHEADER)
