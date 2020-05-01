@@ -1,0 +1,1 @@
+Another study of ffmpeg in C++  this project started as fork of [https://github.com/Raveler/ffmpeg-cpp]( ffmpeg-cpp). Using GPL V3 license, to protect the work in progress, the licence should change one day for LGPL, and the code will be reversed to the original project on demand.
