@@ -57,8 +57,7 @@ int main()
 
         // Load both audio and video from a container
         Demuxer* videoContainer = new Demuxer("../../samples/big_buck_bunny.mp4");
-        // Demuxer* audioContainer = new Demuxer("../../samples/DesiJourney.wav");
-        Demuxer* audioContainer = new Demuxer("../../samples/AC_DC_Hells_Bells.mp3");
+        Demuxer* audioContainer = new Demuxer("../../samples/DesiJourney.wav");
 
         // Tie the best stream from each container to the output
         videoContainer->DecodeBestVideoStream(videoEncoder);
