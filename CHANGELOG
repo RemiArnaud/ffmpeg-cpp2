@@ -1,0 +1,186 @@
+Changelog  Copyright Eric Bachard  2020/04/22
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                                                                                    "
+" => reversed history: the content should preferently being read from bottom to top  "
+"                                                                                    "
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+TODO : improve the demos (a bit confusing curently)
+Improved indentation
+Simplified the code
+Added convertToRGB()  method in the Demuxer.
+Added SetFileSink method in demuxer. Important second effect is that
+we simplified the parameters number when using RawVideoFileSource
+Continued to work at encode video from webcam
+
+Simplifified the interface.
+
+
+2020/04/30
+
+
+FIXED : can write frames (grey currently) from mjpeg webcam !
+
+RawVideoFileSource creation ... done
+Entering in : videoFile->PreparePipeline()
+saving frame   1
+videoFile->PreparePipeline() done ...
+in the loop ...
+saving frame   2
+in the loop ...
+saving frame   3
+in the loop ...
+saving frame   4
+in the loop ...
+saving frame   5
+
+:-)
+
+
+2020/04/29
+
+Current status:  run encode_video gives :
+
+ $ ./encode_video
+Using JPG Codec
+I'm in : Open, trying to set (width, height, framerate,pixel format) : 1280, 720, 1/30, 12
+pixel format  : 12
+pixel format  AV_PIX_FMT_NONE = -1
+IsPixelFormatSupported() done 
+I'm in : IsFrameRateSupported...  questionning framerate :  1 / 30
+IsFrameRateSupported() done 
+[mjpeg @ 0x564803260dc0] bitrate tolerance 4000000 too small for bitrate 200000, overriding
+codec Context is open (ouf)
+codec Open() done
+RawVideoFileSource creation ...
+AVPixelFormat name of AV_PIX_FMT_YUV420P : yuvj420p
+AVPixelFormat name of AV_PIX_FMT_YUVJ420P : yuvj420p
+PixelFormat value for "mjpeg" : -1
+PixelFormat value for "rawvideo" : -1
+Currently in RawVideoFileSource. We are opening (fileName)  :  /dev/video0
+width 1280
+height 720
+format 12
+filename /dev/video0
+device_name /dev/video0
+framerate (int) :  30
+framerate_option_name :  frameRate
+frameRateValue        :  30
+Creating new demuxer 
+open input container() DONE
+avformat_find_stream_info() DONE
+Input #0, video4linux2,v4l2, from '/dev/video0':
+  Duration: N/A, start: 1588097226.689161, bitrate: N/A
+    Stream #0:0: Video: mjpeg (Baseline), yuvj422p(pc, bt470bg/unknown/unknown), 1280x720, 30 fps, 30 tbr, 1000k tbn, 1000k tbc
+av_dump_format() DONE
+containerContext->streams[0] is an AVMEDIA_TYPE_VIDEO stream 
+containerContext->->streams[0]->codec->codec_type = start + 0
+AVMEDIA_TYPE_UNKNOWN = -1, AVMEDIA_TYPE_VIDEO == 0, AVMEDIA_TYPE_AUDIO == 1,AVMEDIA_TYPE_DATA == 2, AVMEDIA_TYPE_SUBTITLE = 3 
+containerContext->->streams[0]->codec->codec_id = 7
+ (NONE = start+0, MJPEG == start+7, MPEG4 == start+12, RAWVIDEO == start+13, H264 == start+27 )
+demuxer created 
+returning from RawVideoFileSource
+RawVideoFileSource creation ... done
+Entering in : videoFile->PreparePipeline()
+videoFile->PreparePipeline() done ...
+in the loop ...
+in the loop ...
+in the loop ...
+in the loop ...
+in the loop ...
+in the loop ...
+
+(CTRL+C) to stop
+
+(to be continued)
+
+
+Added a new constructor in Demuxer class  Demuxer::Demuxer( AVFormatContext *, AVInputFormat *,   AVDictionary *)
+
+The difficulty is : understand where is what in the sources ...
+
+In another program (< 190 lines) I was able to :
+- detect and use a Logitech C922 
+- select mjpeg mode, 1920x1080@30fps
+- take 100 colored (RGB24) frame 1920x1080@30fps
+- save them in a given folder
+
+N.B. : every image is nice, and is around 6MB ... means 600 MB in ~ 5 s !!
+
+
+Improved RawVideoFileSource.cpp and RawVideoFileSource.h. Added a and implemented new Ctor :
+- RawVideoFileSource::RawVideoFileSource(const char*, int, int, int, AVPixelFormat, FrameSink* frameSink);
+- see : https://github.com/pijushbarik/videoreader-ffmpeg/pulls 
+
+Tested a lot with Linux kernel IOCTL + v4l2 API. Extrelemy fast, but not exactly what I need.
+I'll keeping the code around, just in case.
+
+
+2020/04/28
+
+Tested videoreader-ffmpeg, https://github.com/ebachard/videoreader-ffmpeg
+
+
+
+
+
+2020/04/27
+
+
+Made the wecbam light shine :-)  (/dev/video0)
+
+Added one script per demo. IMPROVE ME : add a demo CMakefile.txt or something like that
+Improved the layout in the README
+ffmpeg-cpp is now warnings free
+Added linking to libva, libva*
+Added VP9 Codec 
+Renamed H264 codec in H264NV (NV for NVidia), to avoid confusion with the unaccelerated one.
+Removed more warnings (unused variables).
+
+
+
+
+2020/04/26
+
+
+Added some codecs (generic files with AV_CODEC_ID's only + some private options)
+Using .mp4 (VAAPI implementation 80% missing)
+Added reference files
+Created the documentation folder
+Started acceleration works with VAAPI
+Updated the TODO list
+Clarified the Linux part in the README
+Fixed more demos (print_info)
+More cleanup
+Fixed: the demos are warnings free
+Added some little scripts to build every demo separately
+FIXED : most of the demos work
+Added missing information
+Cosmetics
+
+2020/04/23
+
+
+Added all the changes making the demo to work
+Moved the samples at a better location
+Removed all getchar()
+Added libvpx as dependancy
+Fixed more Linux issues : updated the README to explain what has to be installed to be able to test the examples
+Added a better fix in exceptions
+Fixed more warnings (signed/unsigned, exceptions)
+Fixed all build breakages : build completed, but zillions of warnings yet
+Workarounded exceptions handling, to allow the build to complete (FIXME : fix that one day)
+Fixed some strange headers issues
+Updated the README file (added some Linux information)
+Created a (newbie) CMakefile.txt.
+Added licence GPL V3 to protect my changes, but this is for some time only.
+
+Forked ffmpeg-cpp from https://github.com/Raveler/ffmpeg-cpp
+Looks extremely interesting !
+
+2020/04/22
+
+
