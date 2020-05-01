@@ -40,7 +40,7 @@ int main()
 		Filter* filter = new Filter("showwavespic=colors=white:s=512x64", encoder); */
 
 		// Load a video from a container and send it to the filter first.
-		Demuxer* demuxer = new Demuxer("../samples/Vivaldi_Sonata_eminor_.mp3");
+		Demuxer* demuxer = new Demuxer("../../samples/Vivaldi_Sonata_eminor_.mp3");
 		demuxer->DecodeBestAudioStream(filter);
 
 		// Prepare the output pipeline. This will push a small amount of frames to the file sink until it IsPrimed returns true.

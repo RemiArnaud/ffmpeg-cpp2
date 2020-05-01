@@ -32,8 +32,8 @@ int main()
 		Filter* vignetteFilter = new Filter("vignette", filter);
 
 		// Load both video's
-		Demuxer* videoContainer1 = new Demuxer("../samples/carphone.h264");
-		Demuxer* videoContainer2 = new Demuxer("../samples/carphone.h264");
+		Demuxer* videoContainer1 = new Demuxer("../../samples/carphone.h264");
+		Demuxer* videoContainer2 = new Demuxer("../../samples/carphone.h264");
 
 		// Tie the best stream from each container to the output
 		videoContainer1->DecodeBestVideoStream(filter);

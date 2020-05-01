@@ -7,7 +7,7 @@
 # see : http://www.gnu.org/licenses/gpl-2.0.html
 #
 g++ -I..  -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o filtering_audio filtering_audio.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libavfilter libswscale libavformat libswresample`

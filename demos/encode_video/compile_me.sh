@@ -13,28 +13,28 @@
 #BUIlD_DIR="./build"
 
 g++ -g ${DEBG} -I.. -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o encode_video_to_MPEG2 encode_to_MPEG2_video.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat libavdevice`
 
 
 g++ ${DEBG} -I.. -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o encode_video_to_MPEG4 encode_to_MPEG4_video.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat libavdevice`
 
 
 g++ ${DEBG} -I.. -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o encode_video_to_H264 encode_to_H264_video.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat libavdevice`
 
 g++ ${DEBG} -I.. -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o encode_MJPEG_webcam_to_VP9_video encode_MJPEG_webcam_to_VP9_video.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat libavdevice`
 

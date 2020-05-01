@@ -16,17 +16,14 @@ endif()
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-file(GLOB_RECURSE INC source/*.h)
-file(GLOB_RECURSE SRC source/*.cpp)
+file(GLOB_RECURSE INC sources/*.h)
+file(GLOB_RECURSE SRC sources/*.cpp)
 
 add_library(${PROJECT_NAME} ${SRC}) 
 
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/source/ffmpeg-cpp )
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/sources )
 
-if (UNIX)
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/source/ffmpeg-cpp/ffmpeg-cpp )
-endif()
 
 target_link_libraries(${PROJECT_NAME} ffmpeg vpx va va-drm va-glx)
 

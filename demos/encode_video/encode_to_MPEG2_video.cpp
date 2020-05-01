@@ -30,7 +30,7 @@ int main()
         VideoEncoder* encoder = new VideoEncoder(codec, muxer);
 
         //RawVideoFileSource* videoFile = new RawVideoFileSource(videoContainer->GetFileName(), encoder);
-        RawVideoFileSource* videoFile = new RawVideoFileSource("../samples/big_buck_bunny.mp4", encoder);
+        RawVideoFileSource* videoFile = new RawVideoFileSource("../../samples/big_buck_bunny.mp4", encoder);
 
         // Prepare the output pipeline. This will push a small amount of frames to the file sink until it IsPrimed returns true.
         videoFile->PreparePipeline();

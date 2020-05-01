@@ -10,7 +10,7 @@
 #g++ -g -DDEBUG -Wall -std=c++11  \
 
 g++ -Wall -std=c++11  \
-    -I.. -I../ffmpeg-cpp \
+    -I../../sources \
     -o encode_audio encode_audio.cpp \
-    -L../../../build/ -lffmpeg-cpp \
+    -L../../build/ -lffmpeg-cpp \
     `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat libswresample`

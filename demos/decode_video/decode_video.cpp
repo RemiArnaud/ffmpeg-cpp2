@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include "ffmpeg-cpp/ffmpegcpp.h"
+#include "ffmpegcpp.h"
 
 using namespace std;
 using namespace ffmpegcpp;
@@ -29,7 +29,7 @@ public:
 
 		// write the first channel's color data to a PGM file.
 		// This raw image file can be opened with most image editing programs.
-		snprintf(fileNameBuffer, sizeof(fileNameBuffer), "pgm-%d.pgm", frameNumber);
+		snprintf(fileNameBuffer, sizeof(fileNameBuffer), "frames/pgm-%d.pgm", frameNumber);
 		pgm_save(frame->data[0], frame->linesize[0],
 			frame->width, frame->height, fileNameBuffer);
 	}
@@ -74,7 +74,7 @@ int main()
 	try
 	{
 		// Load this container file so we can extract video from it.
-		Demuxer* demuxer = new Demuxer("../samples/big_buck_bunny.mp4");
+		Demuxer* demuxer = new Demuxer("../../samples/big_buck_bunny.mp4");
 
 		// Create a file sink that will just output the raw frame data in one PGM file per frame.
 		PGMFileSink* fileSink = new PGMFileSink();

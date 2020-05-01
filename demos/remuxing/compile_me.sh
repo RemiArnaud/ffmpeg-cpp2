@@ -9,8 +9,8 @@
 
 #g++ -g -DDEBUG -I..  -Wall -std=c++11  \
 g++ -I..  -Wall -std=c++11  \
-          -I../ffmpeg-cpp \
+          -I../../sources \
           -o remuxing remuxing.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat libswresample` -lrt
 

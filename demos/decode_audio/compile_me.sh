@@ -7,7 +7,7 @@
 # see : http://www.gnu.org/licenses/gpl-2.0.html
 #
 
-g++ -I.. -I../ffmpeg-cpp  -Wall -std=c++11  \
+g++ -I.. -I../../sources  -Wall -std=c++11  \
           -o decode_audio decode_audio.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat`

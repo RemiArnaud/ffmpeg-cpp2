@@ -13,7 +13,7 @@ int main()
 	{
 
 		// Load a video from a container and read its info.
-		const char* fileName = "../samples/big_buck_bunny.mp4";
+		const char* fileName = "../../samples/big_buck_bunny.mp4";
 		Demuxer* demuxer = new Demuxer(fileName);
 		ContainerInfo info = demuxer->GetInfo();
 

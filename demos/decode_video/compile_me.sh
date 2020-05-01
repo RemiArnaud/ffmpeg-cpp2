@@ -6,7 +6,7 @@
 # This document is under GPL v2 license
 # see : http://www.gnu.org/licenses/gpl-2.0.html
 #
-g++ -I..  -Wall -std=c++11  \
+g++ -I../../sources  -Wall -std=c++11  \
           -o decode_video decode_video.cpp \
-          -L../../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat`

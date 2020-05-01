@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include "ffmpeg-cpp/ffmpegcpp.h"
+#include "ffmpegcpp.h"
 
 using namespace std;
 using namespace ffmpegcpp;
@@ -61,7 +61,7 @@ int main()
 	try
 	{
 		// Load this container file so we can extract audio from it.
-		Demuxer* demuxer = new Demuxer("../samples/big_buck_bunny.mp4");
+		Demuxer* demuxer = new Demuxer("../../samples/big_buck_bunny.mp4");
 
 		// Create a file sink that will just output the raw audio data.
 		RawAudioFileSink* fileSink = new RawAudioFileSink("rawaudio.aac");
