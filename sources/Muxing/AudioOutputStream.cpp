@@ -9,9 +9,9 @@ namespace ffmpegcpp
 	{
 	}
 
-	void AudioOutputStream::OpenStream(AVStream* stream, int containerFlags)
+	void AudioOutputStream::OpenStream(AVStream* p_stream, int containerFlags)
 	{
-		this->stream = stream;
+		this->stream = p_stream;
 
 		// special case for certain containers
 		if (containerFlags & AVFMT_GLOBALHEADER)
