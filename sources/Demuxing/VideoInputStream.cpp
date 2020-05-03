@@ -4,8 +4,8 @@
 
 namespace ffmpegcpp
 {
-	VideoInputStream::VideoInputStream(AVFormatContext* format, AVStream* stream)
-		: InputStream(format, stream)
+	VideoInputStream::VideoInputStream(AVFormatContext* p_format, AVStream* p_stream)
+		: InputStream(p_format, p_stream)
 	{
 	}
 
