@@ -6,7 +6,7 @@ using std::cout;
 
 using namespace ffmpegcpp;
 
-//TODO : use existing interface instead ?
+static bool bDone = false;
 
 class PGMFileSink : public VideoFrameSink, public FrameWriter
 {
@@ -32,19 +32,22 @@ public:
         // This raw image file can be opened with most image editing programs.
         snprintf(fileNameBuffer, sizeof(fileNameBuffer), "frames/frame-%d.pgm", frameNumber);
         pgm_save(frame->data[0], frame->linesize[0], frame->width, frame->height, fileNameBuffer);
+
+        if (frameNumber > 50)
+            bDone = true;
     }
 
-    void pgm_save(unsigned char *bufy, int wrap, int xsize, int ysize, char *filename)
+    void pgm_save(unsigned char *bufy , int wrapy, int xsize, int ysize, char *filename)
     {
         FILE *f;
         int i;
         f = fopen(filename, "w");
-
         fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
 
         for (i = 0; i < ysize; i++)
         {
-            fwrite(bufy + i * wrap, 1, xsize, f);
+
+            fwrite(bufy + i * wrapy , 1 , xsize , f );
         }
         fclose(f);
     }
@@ -71,38 +74,14 @@ private:
 };
 
 
-
 int main()
 {
     avdevice_register_all();
 
-    // This example is a work in progress, means unfinished.
-    // DONE:
-    // - detect the webcam
-    // - set the right parameters (for instance, 1920x1080@30fps, Logitech C920 / C922 / Brio  (other webcams untested)
-    // - activate the webcam
-    // - create the stream
-    // - create the demuxer
-    // - create the frames
-    // - convert them into grey (type 5) .ppm
-    //
-    // - TODO:
-    // - convert YUV frames into RGB frames
-    // - initialize  the encoder and build the video at the end.
-    // - create the video (.mpg or whatever)
-    // - improve, and use better the implementation
-    //
-    // GOAL : 
-    // This program aims to take the stream from a webcam  (mjpeg stream),
-    // turn it into raw frames, and encode it into as VP9 video (HEVC codec).
-
-
     try
     {
         // Create a muxer that will output the video as MKV.
-        Muxer* muxer = new Muxer("webcam_to_VP9.mpg");
-
-        std::cerr << "Using MJPEG input Codec" << "\n";
+        Muxer* muxer = new Muxer("webcam_to_MJPEG.mpg");
 
         MJPEGCodec * codec = new MJPEGCodec();
 
@@ -122,24 +101,23 @@ int main()
 
         codec->Open(width, height, &frameRate, pix_format);
 
-        //VideoEncoder * vEncoder = new VideoEncoder(codec, muxer);
-
         PGMFileSink* fileSink = new PGMFileSink();
-        RawVideoFileSource* videoFile = new RawVideoFileSource("/dev/video0", 1280, 720, frameRate.den, pix_format);
-        videoFile->setFrameSink(fileSink);;
-        videoFile->demuxer->DecodeBestVideoStream(fileSink);
+
+        Demuxer *  demuxer = new Demuxer("/dev/video0", 1280, 720, 30);
+        demuxer->DecodeBestVideoStream(fileSink);
 
         // Prepare the output pipeline. This will push a small amount of frames to the file sink until it IsPrimed returns true.
-        videoFile->PreparePipeline();
-        std::cerr << "videoFile->PreparePipeline() done ..." << "\n";
+        demuxer->PreparePipeline();
 
         // Push all the remaining frames through.
-        while (!videoFile->IsDone())
+        while ((!demuxer->IsDone()) &&(bDone == false))
         {
-            videoFile->Step();
+            demuxer->Step();
         }
         // Save everything to disk by closing the muxer.
         muxer->Close();
+        delete demuxer;
+        delete fileSink;
     }
 
     catch (FFmpegException e)
