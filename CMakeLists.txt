@@ -9,12 +9,12 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
-if (CMAKE_SYSTEM MATCHES Linux)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra -DDEBUG -DLinux")
-endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+if (CMAKE_SYSTEM MATCHES Linux)
+#testing some warning flags. Be carefull: some can be DANGEROUS when badly used
+   set(CMAKE_CXX_FLAGS "-g -DDEBUG -DLinux -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare -fms-extensions -Wfloat-equal")
+##    set(CMAKE_CXX_FLAGS "-Wall -Wextra -g -DDEBUG -DLinux")
+endif()
 
 file(GLOB_RECURSE INC sources/*.h)
 file(GLOB_RECURSE SRC sources/*.cpp)
