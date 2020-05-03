@@ -7,6 +7,22 @@ Changelog  Copyright Eric Bachard  2020/04/22
 "                                                                                    "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+Fixed several regressions (print_info, remuxing) due to wrong warnings fixes.
+The counterpart is: some warnings are back (mainly variable declarations shadowing other)
+
+
+
+Improved the demos, and added (in encode_video):
+
+- encode_to_H264 (ok)
+- encode_to_MPEG2 (ok)
+- encode_to_MPEG4 (ok)
+- encode MJPEG_webcam_to_VP9_video  Current status : grey frames only, empty VP9 at the end.
+Investigating RawVideoDataSource and FileSink classes.
+
+
+2020 May 3rd
+
 
 Final libffmpeg-cpp.a is less than 500 kB :-)
 Verified ALL demos. Seems to work well.
