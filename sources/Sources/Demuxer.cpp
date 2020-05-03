@@ -21,34 +21,34 @@ namespace ffmpegcpp
 
         int ret = 0;// open input file, and allocate format context
 
-        if ((ret = avformat_open_input(&pAVFormatContextIn, m_fileName, p_inputFormat, &p_format_opts)) < 0)
+        if ((ret = avformat_open_input(&containerContext, p_fileName, p_inputFormat, &p_format_opts)) < 0)
         {
             CleanUp();
-            throw FFmpegException(std::string("Failed to open input container " + string(m_fileName)).c_str(), ret);
+            throw FFmpegException(std::string("Failed to open input container " + string(p_fileName)).c_str(), ret);
         }
 
-//        this->options       = p_format_opts;
-//        this->m_inputFormat = p_inputFormat;
+        this->options       = p_format_opts;
+        this->m_inputFormat = p_inputFormat;
 
         // retrieve stream information
-        if ( (ret = (avformat_find_stream_info(pAVFormatContextIn, NULL))) < 0)
+        if ( (ret = (avformat_find_stream_info(containerContext, NULL))) < 0)
         {
             CleanUp();
             throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
         }
 
-        inputStreams = new InputStream*[pAVFormatContextIn->nb_streams];
-        for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+        inputStreams = new InputStream*[containerContext->nb_streams];
+        for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
 /*
-            AVCodecParameters* par = pAVFormatContextIn->streams[i]->codecpar;
+            AVCodecParameters* par = containerContext->streams[i]->codecpar;
 
             if  ((par->codec_type) == AVMEDIA_TYPE_VIDEO)
             {
-                pAVCodec =  avcodec_find_encoder(pAVFormatContextIn->streams[i]->codecpar->codec_id);
-                m_width  = pAVFormatContextIn->streams[i]->codecpar->width;
-                m_height = pAVFormatContextIn->streams[i]->codecpar->height;
-                options  = pAVFormatContextIn->metadata;
+                pAVCodec =  avcodec_find_encoder(containerContext->streams[i]->codecpar->codec_id);
+                m_width  = containerContext->streams[i]->codecpar->width;
+                m_height = containerContext->streams[i]->codecpar->height;
+                options  = containerContext->metadata;
             }
 */
             inputStreams[i] = nullptr;
@@ -66,9 +66,9 @@ namespace ffmpegcpp
         pkt->size = 0;
     }
 
-    Demuxer::Demuxer(const char* s_fileName, int d_width, int d_height, int d_framerate)
+    Demuxer::Demuxer(const char* p_fileName, int d_width, int d_height, int d_framerate)
     {
-        m_fileName = s_fileName;
+        m_fileName = p_fileName;
         m_width  = d_width;
         m_height = d_height;
         m_framerate = d_framerate;
@@ -93,8 +93,8 @@ namespace ffmpegcpp
         // Fixed by the operating system
         const char * input_device = "v4l2";
 #endif
-        pAVFormatContextIn = avformat_alloc_context();
-        pAVFormatContextIn->video_codec_id = AV_CODEC_ID_MJPEG;
+        containerContext = avformat_alloc_context();
+        containerContext->video_codec_id = AV_CODEC_ID_MJPEG;
 
         m_inputFormat = av_find_input_format(input_device);
 
@@ -116,7 +116,7 @@ namespace ffmpegcpp
         av_dict_set(&options, "pixel_format", pix_fmt_name, 0);  //  "mjpeg" "yuvj420p"
         av_dict_set(&options, "use_wallclock_as_timestamps", "1", 0);
 
-        if ((ret = avformat_open_input(&pAVFormatContextIn, m_fileName, m_inputFormat, &options)) < 0)
+        if ((ret = avformat_open_input(&containerContext, m_fileName, m_inputFormat, &options)) < 0)
         {
             std::cerr << "Failed to open input container "  <<  "\n";
             CleanUp();
@@ -128,7 +128,7 @@ namespace ffmpegcpp
 #endif
 
         // retrieve stream information
-        if ( (ret = (avformat_find_stream_info(pAVFormatContextIn, NULL))) < 0)
+        if ( (ret = (avformat_find_stream_info(containerContext, NULL))) < 0)
         {
             CleanUp();
             throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
@@ -137,22 +137,22 @@ namespace ffmpegcpp
         else
             std::cerr << "avformat_find_stream_info() DONE"  <<  "\n";
 #endif
-        av_dump_format(pAVFormatContextIn , 0 , m_fileName , 0 );
+        av_dump_format(containerContext , 0 , m_fileName , 0 );
 #ifdef DEBUG
         std::cerr << "av_dump_format() DONE"  <<  "\n";
 #endif
         int VideoStreamIndx = -1;
 
-        for(unsigned int i=0; i<pAVFormatContextIn->nb_streams ;i++ )
+        for(unsigned int i=0; i<containerContext->nb_streams ;i++ )
         {
-            if( pAVFormatContextIn->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) // if video stream found then get the index.
+            if( containerContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) // if video stream found then get the index.
             {
-                cout <<  "pAVFormatContextIn->streams["  << i <<  "] is an AVMEDIA_TYPE_VIDEO stream " << "\n";
-                cout << "pAVFormatContextIn->->streams[" << i << "]->codec->codec_type = start + " 
-                     << pAVFormatContextIn->streams[i]->codecpar->codec_type << "\n";
+                cout <<  "containerContext->streams["  << i <<  "] is an AVMEDIA_TYPE_VIDEO stream " << "\n";
+                cout << "containerContext->->streams[" << i << "]->codec->codec_type = start + " 
+                     << containerContext->streams[i]->codecpar->codec_type << "\n";
                 cout << "AVMEDIA_TYPE_UNKNOWN = -1, AVMEDIA_TYPE_VIDEO == 0, AVMEDIA_TYPE_AUDIO == 1,AVMEDIA_TYPE_DATA == 2, AVMEDIA_TYPE_SUBTITLE = 3 " <<  "\n";
-                cout << "pAVFormatContextIn->->streams[" << i << "]->codec->codec_id = " 
-                     << pAVFormatContextIn->streams[i]->codecpar->codec_id << "\n";
+                cout << "containerContext->->streams[" << i << "]->codec->codec_id = " 
+                     << containerContext->streams[i]->codecpar->codec_id << "\n";
                 cout << " (NONE = start+0, MJPEG == start+7, MPEG4 == start+12, RAWVIDEO == start+13, H264 == start+27 )" << "\n";
 
                 VideoStreamIndx = i;
@@ -169,14 +169,14 @@ namespace ffmpegcpp
         // inspired from https://code.mythtv.org/trac/ticket/13186?cversion=0&cnum_hist=2
         AVCodecContext *pAVCodecContext = NULL;
         pAVCodec = NULL;
-        pAVCodec = avcodec_find_decoder(pAVFormatContextIn->streams[VideoStreamIndx]->codecpar->codec_id);
+        pAVCodec = avcodec_find_decoder(containerContext->streams[VideoStreamIndx]->codecpar->codec_id);
         pAVCodecContext = avcodec_alloc_context3(pAVCodec);
-        avcodec_parameters_to_context(pAVCodecContext, pAVFormatContextIn->streams[VideoStreamIndx]->codecpar);
+        avcodec_parameters_to_context(pAVCodecContext, containerContext->streams[VideoStreamIndx]->codecpar);
 
-        inputStreams = new InputStream*[pAVFormatContextIn->nb_streams];
+        inputStreams = new InputStream*[containerContext->nb_streams];
 
 // TODO : understand why doing that
-        for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+        for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
             inputStreams[i] = nullptr;
         }
@@ -207,7 +207,7 @@ namespace ffmpegcpp
     {
         if (inputStreams != nullptr)
         {
-            for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+            for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
             {
                 inputStreams[i] = nullptr;
             }
@@ -215,10 +215,10 @@ namespace ffmpegcpp
             inputStreams = nullptr;
         }
 
-        if (pAVFormatContextIn != nullptr)
+        if (containerContext != nullptr)
         {
-            avformat_close_input(&pAVFormatContextIn);
-            pAVFormatContextIn = nullptr;
+            avformat_close_input(&containerContext);
+            containerContext = nullptr;
         }
 
         if (pkt != nullptr)
@@ -230,7 +230,7 @@ namespace ffmpegcpp
 
     void Demuxer::DecodeBestAudioStream(FrameSink* frameSink)
     {
-        int ret = av_find_best_stream(pAVFormatContextIn, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+        int ret = av_find_best_stream(containerContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
 
         if (ret < 0)
         {
@@ -243,7 +243,7 @@ namespace ffmpegcpp
 
     void Demuxer::DecodeBestVideoStream(FrameSink* frameSink)
     {
-        int ret = av_find_best_stream(pAVFormatContextIn, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+        int ret = av_find_best_stream(containerContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 
         if (ret < 0)
         {
@@ -296,7 +296,7 @@ namespace ffmpegcpp
         if (IsDone())
             return nullptr;
 
-        AVStream* stream = pAVFormatContextIn->streams[streamIndex];
+        AVStream* stream = containerContext->streams[streamIndex];
         pAVCodec = CodecDeducer::DeduceDecoder(stream->codecpar->codec_id);
 
         if (pAVCodec == nullptr)
@@ -305,11 +305,11 @@ namespace ffmpegcpp
         switch (pAVCodec->type)
         {
             case AVMEDIA_TYPE_VIDEO:
-                inputStreams[streamIndex] = new VideoInputStream(pAVFormatContextIn, stream);
+                inputStreams[streamIndex] = new VideoInputStream(containerContext, stream);
             break;
 
             case AVMEDIA_TYPE_AUDIO:
-                inputStreams[streamIndex] = new AudioInputStream(pAVFormatContextIn, stream);
+                inputStreams[streamIndex] = new AudioInputStream(containerContext, stream);
             break;
 
             default:
@@ -323,9 +323,9 @@ namespace ffmpegcpp
     InputStream* Demuxer::GetInputStreamById(int streamId)
     {
         // map the stream id to an index by going over all the streams and comparing the id
-        for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+        for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
-            AVStream* stream = pAVFormatContextIn->streams[i];
+            AVStream* stream = containerContext->streams[i];
 
             if (stream->id == streamId)
                 return GetInputStream(i);
@@ -346,7 +346,7 @@ namespace ffmpegcpp
             // see if all input streams are primed
             allPrimed = true;
 
-            for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+            for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
             {
                 InputStream* stream = inputStreams[i];
 
@@ -369,7 +369,7 @@ namespace ffmpegcpp
     void Demuxer::Step()
     {
         // read frames from the file
-        int ret = av_read_frame(pAVFormatContextIn, pkt);
+        int ret = av_read_frame(containerContext, pkt);
 
         // EOF
         if (ret == AVERROR_EOF)
@@ -377,7 +377,7 @@ namespace ffmpegcpp
             pkt->data = NULL;
             pkt->size = 0;
 
-            for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+            for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
             {
                 InputStream* stream = inputStreams[i];
 
@@ -427,15 +427,15 @@ namespace ffmpegcpp
 
         // general data
         // the duration is calculated like this... why?
-        int64_t duration = pAVFormatContextIn->duration + (pAVFormatContextIn->duration <= INT64_MAX - 5000 ? 5000 : 0);
+        int64_t duration = containerContext->duration + (containerContext->duration <= INT64_MAX - 5000 ? 5000 : 0);
         info.durationInMicroSeconds = duration;
         info.durationInSeconds = (float)info.durationInMicroSeconds / AV_TIME_BASE;
-        info.start = (float)pAVFormatContextIn->start_time / AV_TIME_BASE;
-        info.bitRate = pAVFormatContextIn->bit_rate;
-        info.format = pAVFormatContextIn->iformat;
+        info.start = (float)containerContext->start_time / AV_TIME_BASE;
+        info.bitRate = containerContext->bit_rate;
+        info.format = containerContext->iformat;
 
         // go over all streams and get their info
-        for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+        for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
             InputStream* stream = GetInputStream(i);
 
@@ -449,7 +449,7 @@ namespace ffmpegcpp
     int Demuxer::GetFrameCount(int streamId)
     {
         // Make sure all streams exist, so we can query them later.
-        for (unsigned int i = 0; i < pAVFormatContextIn->nb_streams; ++i)
+        for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
             GetInputStream(i);
         }

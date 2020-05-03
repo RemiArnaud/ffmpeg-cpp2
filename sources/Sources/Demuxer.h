@@ -60,10 +60,10 @@ namespace ffmpegcpp
         //std::vector<StreamInfo> GetStreamInfo(AVMediaType mediaType);
         //StreamInfo CreateInfo(int streamIndex, AVStream* stream, AVCodec* codec);
 
-        InputStream** inputStreams;
+        InputStream** inputStreams = nullptr;
 
-//        AVFormatContext* containerContext = nullptr;
-        AVPacket* pkt;
+        AVFormatContext* containerContext = nullptr;
+        AVPacket* pkt = nullptr;
 
         void DecodePacket();
 
