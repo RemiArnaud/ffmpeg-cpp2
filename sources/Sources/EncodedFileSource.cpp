@@ -6,12 +6,12 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	EncodedFileSource::EncodedFileSource(const char* inFileName, const char* codecName, FrameSink* p_output)
+	EncodedFileSource::EncodedFileSource(const char* inFileName, const char* codecName, FrameSink* output)
 	{
 		try
 		{
-			m_codec = CodecDeducer::DeduceDecoder(codecName);
-			Init(inFileName, m_codec, p_output);
+			AVCodec* codec = CodecDeducer::DeduceDecoder(codecName);
+			Init(inFileName, codec, output);
 		}
 		catch (FFmpegException e)
 		{
@@ -20,12 +20,12 @@ namespace ffmpegcpp
 		}
 	}
 
-	EncodedFileSource::EncodedFileSource(const char* inFileName, AVCodecID codecId, FrameSink* p_output)
+	EncodedFileSource::EncodedFileSource(const char* inFileName, AVCodecID codecId, FrameSink* output)
 	{
 		try
 		{
-			m_codec = CodecDeducer::DeduceDecoder(codecId);
-			Init(inFileName, m_codec, p_output);
+			AVCodec* codec = CodecDeducer::DeduceDecoder(codecId);
+			Init(inFileName, codec, output);
 		}
 		catch (FFmpegException e)
 		{
@@ -46,10 +46,10 @@ namespace ffmpegcpp
 			av_frame_free(&decoded_frame);
 			decoded_frame = nullptr;
 		}
-		if (m_pkt != nullptr)
+		if (pkt != nullptr)
 		{
-			av_packet_free(&m_pkt);
-			m_pkt = nullptr;
+			av_packet_free(&pkt);
+			pkt = nullptr;
 		}
 		if (buffer != nullptr)
 		{
@@ -75,27 +75,27 @@ namespace ffmpegcpp
 		fclose(file);
 	}
 
-	void EncodedFileSource::Init(const char* inFileName, AVCodec* p_codec, FrameSink* p_output)
+	void EncodedFileSource::Init(const char* inFileName, AVCodec* codec, FrameSink* output)
 	{
-		this->m_output = p_output->CreateStream();
-		this->m_codec = p_codec;
+		this->output = output->CreateStream();
+		this->codec = codec;
 
-		parser = av_parser_init(m_codec->id);
+		parser = av_parser_init(codec->id);
 		if (!parser)
 		{
-			throw FFmpegException(std::string("Parser for codec not found " + string(m_codec->name)).c_str());
+			throw FFmpegException(std::string("Parser for codec not found " + string(codec->name)).c_str());
 		}
 
-		codecContext = avcodec_alloc_context3(m_codec);
+		codecContext = avcodec_alloc_context3(codec);
 		if (!codecContext)
 		{
-			throw FFmpegException(std::string("Failed to allocate context for codec " + string(m_codec->name)).c_str());
+			throw FFmpegException(std::string("Failed to allocate context for codec " + string(codec->name)).c_str());
 		}
 
 		/* open it */
-		if (int ret = avcodec_open2(codecContext, m_codec, NULL) < 0)
+		if (int ret = avcodec_open2(codecContext, codec, NULL) < 0)
 		{
-			throw FFmpegException(std::string("Failed to open context for codec " + string(m_codec->name)).c_str(), ret);
+			throw FFmpegException(std::string("Failed to open context for codec " + string(codec->name)).c_str(), ret);
 		}
 
 		file = fopen(inFileName, "rb");
@@ -110,8 +110,8 @@ namespace ffmpegcpp
 			throw FFmpegException(std::string("Could not allocate video frame").c_str());
 		}
 
-		m_pkt = av_packet_alloc();
-		if (!m_pkt)
+		pkt = av_packet_alloc();
+		if (!pkt)
 		{
 			throw FFmpegException(std::string("Failed to allocate packet").c_str());
 		}
@@ -140,7 +140,7 @@ namespace ffmpegcpp
 
 	void EncodedFileSource::PreparePipeline()
 	{
-		while (!m_output->IsPrimed() && !IsDone())
+		while (!output->IsPrimed() && !IsDone())
 		{
 			Step();
 		}
@@ -167,7 +167,7 @@ namespace ffmpegcpp
 		data = buffer;
 		while (data_size > 0)
 		{
-			ret = av_parser_parse2(parser, codecContext, &m_pkt->data, &m_pkt->size,
+			ret = av_parser_parse2(parser, codecContext, &pkt->data, &pkt->size,
 				data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
 			if (ret < 0)
 			{
@@ -176,9 +176,9 @@ namespace ffmpegcpp
 			data += ret;
 			data_size -= ret;
 
-			if (m_pkt->size)
+			if (pkt->size)
 			{
-				Decode(m_pkt, decoded_frame);
+				Decode(pkt, decoded_frame);
 			}
 		}
 
@@ -187,11 +187,11 @@ namespace ffmpegcpp
 		{
 
 			/* flush the decoder */
-			m_pkt->data = NULL;
-			m_pkt->size = 0;
-			Decode(m_pkt, decoded_frame);
+			pkt->data = NULL;
+			pkt->size = 0;
+			Decode(pkt, decoded_frame);
 
-			m_output->Close();
+			output->Close();
 
 			done = true;
 		}
@@ -241,7 +241,7 @@ namespace ffmpegcpp
 			// push the frame to the next stage.
 			// The time_base is filled in in the codecContext after the first frame is decoded
 			// so we can fetch it from there.
-			m_output->WriteFrame(frame, metaData);
+			output->WriteFrame(frame, metaData);
 		}
 	}
 }

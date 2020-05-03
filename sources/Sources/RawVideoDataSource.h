@@ -35,7 +35,7 @@ namespace ffmpegcpp
 
 		StreamData metaData;
 
-		AVFrame* frame = nullptr;
-		struct SwsContext* swsContext = nullptr;
+		AVFrame* frame;
+		struct SwsContext* swsContext;
 	};
 }

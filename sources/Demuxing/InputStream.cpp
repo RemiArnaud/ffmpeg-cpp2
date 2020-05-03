@@ -113,7 +113,7 @@ namespace ffmpegcpp
 		AVRational fr = overrideFrameRate;
 		if (!fr.num) fr = av_guess_frame_rate(format, stream, NULL);
 
-		metaData = new StreamData();
+		StreamData* metaData = new StreamData();
 		metaData->timeBase = tb;
 		metaData->frameRate = fr;
 

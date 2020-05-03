@@ -4,14 +4,14 @@
 namespace ffmpegcpp
 {
 
-	RawAudioDataSource::RawAudioDataSource(AVSampleFormat sampleFormat, int sampleRate, int channels, FrameSink* p_output)
-		: RawAudioDataSource(sampleFormat, sampleRate, channels, av_get_default_channel_layout(channels), p_output)
+	RawAudioDataSource::RawAudioDataSource(AVSampleFormat sampleFormat, int sampleRate, int channels, FrameSink* output)
+		: RawAudioDataSource(sampleFormat, sampleRate, channels, av_get_default_channel_layout(channels), output)
 	{
 	}
 
-	RawAudioDataSource::RawAudioDataSource(AVSampleFormat sampleFormat, int sampleRate, int channels, int64_t channelLayout, FrameSink* p_output)
+	RawAudioDataSource::RawAudioDataSource(AVSampleFormat sampleFormat, int sampleRate, int channels, int64_t channelLayout, FrameSink* output)
 	{
-		this->m_output = p_output->CreateStream();
+		this->output = output->CreateStream();
 
 		// create the frame
 		int ret;
@@ -82,16 +82,16 @@ namespace ffmpegcpp
 
 		// pass on to the sink
 		// we don't have a time_base so we pass NULL and hope that it gets handled later...
-		m_output->WriteFrame(frame, metaData);
+		output->WriteFrame(frame, metaData);
 	}
 
 	void RawAudioDataSource::Close()
 	{
-		m_output->Close();
+		output->Close();
 	}
 
 	bool RawAudioDataSource::IsPrimed()
 	{
-		return m_output->IsPrimed();
+		return output->IsPrimed();
 	}
 }

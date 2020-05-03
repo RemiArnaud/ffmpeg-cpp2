@@ -19,7 +19,7 @@ namespace ffmpegcpp
 		bool IsPrimed();
 
 	private:
-
+                StreamData* metaData;
 		FrameWriter* frameSink;
 		int streamIndex;
 	};

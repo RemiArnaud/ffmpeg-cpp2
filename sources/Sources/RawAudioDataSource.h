@@ -25,7 +25,7 @@ namespace ffmpegcpp
 
 		void CleanUp();
 
-		FrameSinkStream* m_output;
+		FrameSinkStream* output;
 
 		AVFrame* frame = nullptr;
 

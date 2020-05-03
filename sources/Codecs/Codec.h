@@ -25,7 +25,7 @@ namespace ffmpegcpp
 
 	protected:
 
-		AVCodecContext* m_codecContext;
+		AVCodecContext* codecContext = nullptr;
 
 		OpenCodec* Open();
 

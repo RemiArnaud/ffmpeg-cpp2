@@ -48,8 +48,8 @@ namespace ffmpegcpp
 	void VideoCodec::SetQualityScale(int /* qscale */)
 	{
 
-		m_codecContext->flags |= AV_CODEC_FLAG_QSCALE;
-		m_codecContext->global_quality = FF_QP2LAMBDA * 0;
+		codecContext->flags |= AV_CODEC_FLAG_QSCALE;
+		codecContext->global_quality = FF_QP2LAMBDA * 0;
 	}
 
 	bool VideoCodec::IsPixelFormatSupported(AVPixelFormat format)
@@ -63,7 +63,7 @@ namespace ffmpegcpp
 #endif
 		if (format == AV_PIX_FMT_NONE) return true; // let the codec deal with this
 
-		const enum AVPixelFormat *p = m_codecContext->codec->pix_fmts;
+		const enum AVPixelFormat *p = codecContext->codec->pix_fmts;
 		while (*p != AV_PIX_FMT_NONE)
 		{
 			if (*p == format) return true;
@@ -78,8 +78,8 @@ namespace ffmpegcpp
             std::cerr  << "I'm in : "<<  __func__ << "...  questionning framerate :  " <<  frameRate->num <<  " / " << frameRate->den << "\n";
 #endif
 
-		if (!m_codecContext->codec->supported_framerates) return true; // all frame rates are fair game
-		const AVRational *p = m_codecContext->codec->supported_framerates;
+		if (!codecContext->codec->supported_framerates) return true; // all frame rates are fair game
+		const AVRational *p = codecContext->codec->supported_framerates;
 		while (p->num)
 		{
 #ifdef DEBUG
@@ -99,51 +99,51 @@ namespace ffmpegcpp
 #endif
 
 		// sanity checks
-		if (!IsPixelFormatSupported(format)) throw FFmpegException(std::string("Pixel format " + string(av_get_pix_fmt_name(format)) + " is not supported by codec " + m_codecContext->codec->name).c_str());
+		if (!IsPixelFormatSupported(format)) throw FFmpegException(std::string("Pixel format " + string(av_get_pix_fmt_name(format)) + " is not supported by codec " + codecContext->codec->name).c_str());
 
                   std::cerr  <<  "IsPixelFormatSupported() done " << "\n";
 
-		if (!IsFrameRateSupported(frameRate)) throw FFmpegException(std::string("Frame rate " + to_string(frameRate->num) + "/" + to_string(frameRate->den) + " is not supported by codec " + m_codecContext->codec->name).c_str());
+		if (!IsFrameRateSupported(frameRate)) throw FFmpegException(std::string("Frame rate " + to_string(frameRate->num) + "/" + to_string(frameRate->den) + " is not supported by codec " + codecContext->codec->name).c_str());
 
                   std::cerr  <<  "IsFrameRateSupported() done " << "\n";
 
 		// if the codec is not an audio codec, we are doing it wrong!
-		if (m_codecContext->codec->type != AVMEDIA_TYPE_VIDEO) throw FFmpegException(std::string("A video output stream must be initialized with a video codec").c_str());
+		if (codecContext->codec->type != AVMEDIA_TYPE_VIDEO) throw FFmpegException(std::string("A video output stream must be initialized with a video codec").c_str());
 
 		// set everything & open
-		m_codecContext->width = width;
-		m_codecContext->height = height;
-		m_codecContext->pix_fmt = format;
+		codecContext->width = width;
+		codecContext->height = height;
+		codecContext->pix_fmt = format;
 
 		// FPS
 		AVRational time_base;
 		time_base.num = frameRate->den;
 		time_base.den = frameRate->num;
-		m_codecContext->time_base = time_base;
+		codecContext->time_base = time_base;
 		AVRational framerate;
 		framerate.num = frameRate->num;
 		framerate.den = frameRate->den;
-		m_codecContext->framerate = framerate;
+		codecContext->framerate = framerate;
 
 		return Codec::Open();
 	}
 
 	AVPixelFormat VideoCodec::GetDefaultPixelFormat()
 	{
-		const enum AVPixelFormat *p = m_codecContext->codec->pix_fmts;
-		if (*p == AV_PIX_FMT_NONE) throw FFmpegException(std::string("Codec " + string(m_codecContext->codec->name) + " does not have a default pixel format, you have to specify one").c_str());
+		const enum AVPixelFormat *p = codecContext->codec->pix_fmts;
+		if (*p == AV_PIX_FMT_NONE) throw FFmpegException(std::string("Codec " + string(codecContext->codec->name) + " does not have a default pixel format, you have to specify one").c_str());
 		return *p;
 	}
 
 	AVRational VideoCodec::GetClosestSupportedFrameRate(AVRational originalFrameRate)
 	{
-		if (!m_codecContext->codec->supported_framerates)
+		if (!codecContext->codec->supported_framerates)
 		{
 			// make up a frame rate - there is no supported frame rate
 			return originalFrameRate;
 		};
 
-		const AVRational *p = m_codecContext->codec->supported_framerates;
+		const AVRational *p = codecContext->codec->supported_framerates;
 		AVRational bestFrameRate;
 		bestFrameRate.num = 0;
 		bestFrameRate.den = 1;

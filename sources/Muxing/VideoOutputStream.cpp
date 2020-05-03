@@ -5,14 +5,14 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	VideoOutputStream::VideoOutputStream(Muxer* p_muxer, Codec* p_codec)
-		: OutputStream(p_muxer, p_codec)
+	VideoOutputStream::VideoOutputStream(Muxer* muxer, Codec* codec)
+		: OutputStream(muxer, codec)
 	{
 	}
 
-	void VideoOutputStream::OpenStream(AVStream* p_stream, int containerFlags)
+	void VideoOutputStream::OpenStream(AVStream* stream, int containerFlags)
 	{
-		this->stream = p_stream;
+		this->stream = stream;
 
 		// special case for certain containers
 		if (containerFlags & AVFMT_GLOBALHEADER)

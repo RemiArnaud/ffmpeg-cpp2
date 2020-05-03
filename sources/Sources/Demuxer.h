@@ -15,6 +15,7 @@ namespace ffmpegcpp
     public:
 
         Demuxer(const char* fileName);
+        Demuxer(const char* fileName, int width, int height, int framerate);
         Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *inputFormatOptions);
         Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *inputFormatOptions, AVFormatContext * aContainerContext);
         ~Demuxer();
@@ -34,6 +35,7 @@ namespace ffmpegcpp
 
         bool convertToRGB(int VideoStreamIndx, AVFormatContext *bAVFormatContext, AVCodecContext *bAVCodecContext, AVCodec *bAVCodec );
 
+        void setVideoStreamDevice();
         const char* GetFileName();
 
     private:
@@ -42,16 +44,26 @@ namespace ffmpegcpp
 
         const char* m_fileName;
 
+        int m_width;
+        int m_height;
+        int m_framerate;
+
+
+        AVFormatContext* pAVFormatContextIn;
+        AVDictionary * options;
+        AVCodec * pAVCodec;
+        AVInputFormat * m_inputFormat;
+
         InputStream* GetInputStream(int index);
         InputStream* GetInputStreamById(int streamId);
 
         //std::vector<StreamInfo> GetStreamInfo(AVMediaType mediaType);
         //StreamInfo CreateInfo(int streamIndex, AVStream* stream, AVCodec* codec);
 
-        InputStream** inputStreams = nullptr;
+        InputStream** inputStreams;
 
-        AVFormatContext* containerContext = nullptr;
-        AVPacket* pkt = nullptr;
+//        AVFormatContext* containerContext = nullptr;
+        AVPacket* pkt;
 
         void DecodePacket();
 

@@ -10,8 +10,9 @@ namespace ffmpegcpp
 		this->streamIndex = p_streamIndex;
 	}
 
-	void FrameSinkStream::WriteFrame(AVFrame* frame, StreamData* metaData)
+	void FrameSinkStream::WriteFrame(AVFrame* frame, StreamData* p_metaData)
 	{
+                this->metaData = p_metaData;
 		frameSink->WriteFrame(streamIndex, frame, metaData);
 	}
 

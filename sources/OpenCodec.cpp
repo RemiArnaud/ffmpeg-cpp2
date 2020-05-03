@@ -9,14 +9,14 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	OpenCodec::OpenCodec(AVCodecContext* p_context)
+	OpenCodec::OpenCodec(AVCodecContext* context)
 	{
-		if (!avcodec_is_open(p_context))
+		if (!avcodec_is_open(context))
 		{
-			throw FFmpegException(std::string("Codec context for " + string(p_context->codec->name) + " hasn't been opened yet").c_str());
+			throw FFmpegException(std::string("Codec context for " + string(context->codec->name) + " hasn't been opened yet").c_str());
 		}
 
-		this->context = p_context;
+		this->context = context;
 	}
 
 	OpenCodec::~OpenCodec()

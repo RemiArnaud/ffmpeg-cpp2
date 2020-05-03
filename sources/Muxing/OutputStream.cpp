@@ -5,10 +5,10 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	OutputStream::OutputStream(Muxer* p_muxer, Codec* p_codec)
+	OutputStream::OutputStream(Muxer* muxer, Codec* codec)
 	{
-		this->muxer = p_muxer;
-		this->codec = p_codec;
+		this->muxer = muxer;
+		this->codec = codec;
 	}
 
 	void OutputStream::SendPacketToMuxer(AVPacket* pkt)

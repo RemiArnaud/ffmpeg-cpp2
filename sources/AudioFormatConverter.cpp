@@ -4,10 +4,10 @@
 
 namespace ffmpegcpp
 {
-	AudioFormatConverter::AudioFormatConverter(ConvertedAudioProcessor* writer, AVCodecContext* p_codecContext)
+	AudioFormatConverter::AudioFormatConverter(ConvertedAudioProcessor* writer, AVCodecContext* codecContext)
 	{
 		this->output = writer;
-		this->codecContext = p_codecContext;
+		this->codecContext = codecContext;
 
 		converted_frame = av_frame_alloc();
 		int ret;

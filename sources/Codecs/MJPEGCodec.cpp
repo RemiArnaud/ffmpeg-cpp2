@@ -8,7 +8,7 @@ namespace ffmpegcpp
 //		: VideoCodec("mjpeg")
 	{
 
-		m_codecContext->pix_fmt = AV_PIX_FMT_YUVJ420P;
+		codecContext->pix_fmt = AV_PIX_FMT_YUVJ420P;
 	}
 
 // TODO : fixme, wrong parameters

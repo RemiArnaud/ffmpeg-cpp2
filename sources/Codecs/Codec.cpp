@@ -11,56 +11,56 @@ namespace ffmpegcpp
 	{
 		
 		AVCodec* codec = CodecDeducer::DeduceEncoder(codecName);
-		m_codecContext = LoadContext(codec);
+		codecContext = LoadContext(codec);
 	}
 
 
 	Codec::Codec(AVCodecID codecId)
 	{
 		AVCodec* codec = CodecDeducer::DeduceEncoder(codecId);
-		m_codecContext = LoadContext(codec);
+		codecContext = LoadContext(codec);
 	}
 
 	void Codec::SetOption(const char* name, const char* value)
 	{
-		av_opt_set(m_codecContext->priv_data, name, value, 0);
+		av_opt_set(codecContext->priv_data, name, value, 0);
 	}
 
 	void Codec::SetOption(const char* name, int value)
 	{
-		av_opt_set_int(m_codecContext->priv_data, name, value, 0);
+		av_opt_set_int(codecContext->priv_data, name, value, 0);
 	}
 
 	void Codec::SetOption(const char* name, double value)
 	{
-		av_opt_set_double(m_codecContext->priv_data, name, value, 0);
+		av_opt_set_double(codecContext->priv_data, name, value, 0);
 	}
 
 	void Codec::SetGenericOption(const char* name, const char* value)
 	{
-		av_opt_set(m_codecContext, name, value, 0);
+		av_opt_set(codecContext, name, value, 0);
 	}
 
-	AVCodecContext* Codec::LoadContext(AVCodec* p_codec)
+	AVCodecContext* Codec::LoadContext(AVCodec* codec)
 	{
-		m_codecContext = avcodec_alloc_context3(p_codec);
-		if (!m_codecContext)
+		AVCodecContext* codecContext = avcodec_alloc_context3(codec);
+		if (!codecContext)
 		{
 			CleanUp();
-			throw FFmpegException(std::string("Could not allocate video codec context for codec " + string(p_codec->name)).c_str());
+			throw FFmpegException(std::string("Could not allocate video codec context for codec " + string(codec->name)).c_str());
 		}
 
 		// copy the type
-		m_codecContext->codec_type = p_codec->type;
+		codecContext->codec_type = codec->type;
 
-		return m_codecContext;
+		return codecContext;
 	}
 
 	void Codec::CleanUp()
 	{
-		if (m_codecContext != nullptr && !opened)
+		if (codecContext != nullptr && !opened)
 		{
-			avcodec_free_context(&m_codecContext);
+			avcodec_free_context(&codecContext);
 		}
 	}
 
@@ -71,7 +71,7 @@ namespace ffmpegcpp
 			throw FFmpegException(std::string("You can only open a codec once").c_str());
 		}
 
-		int ret = avcodec_open2(m_codecContext, m_codecContext->codec, NULL);
+		int ret = avcodec_open2(codecContext, codecContext->codec, NULL);
 		if (ret < 0)
 		{
 			throw FFmpegException(std::string("Could not open codecContext for codec").c_str(), ret);
@@ -82,7 +82,7 @@ namespace ffmpegcpp
                 std::cerr << "codec Context is open (ouf)"  << "\n";
 #endif
 
-		return new OpenCodec(m_codecContext);
+		return new OpenCodec(codecContext);
 	}
 
 	Codec::~Codec()
@@ -93,6 +93,6 @@ namespace ffmpegcpp
 	void Codec::SetGlobalContainerHeader()
 	{
 		if (opened) throw FFmpegException("This flag should be set before opening the codec");
-		m_codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+		codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 	}
 }
