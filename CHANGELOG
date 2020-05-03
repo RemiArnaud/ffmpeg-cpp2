@@ -7,10 +7,19 @@ Changelog  Copyright Eric Bachard  2020/04/22
 "                                                                                    "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+
+The regressions previously mentionned in print_info and in remusing seems to be fixed.
+
+Changes in Demuxer class :
+- new interface and implementation
+- Added 2 new methods : setVideoStreamDevice and convertToRGB (could become convertTO() )
+
+Changes in RawVideoFileSource{ .cpp, .h} :
+- simplified the implementation,
+- added 1 new method : setFrameSink
+
 Fixed several regressions (print_info, remuxing) due to wrong warnings fixes.
 The counterpart is: some warnings are back (mainly variable declarations shadowing other)
-
-
 
 Improved the demos, and added (in encode_video):
 
