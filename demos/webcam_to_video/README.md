@@ -8,8 +8,8 @@ Current status :
 - works with mjpeg webcams like Logitech webcams (C920, C922, Brio stream models, other are untested)
 - don't forget /dev/video0 is used (adapt to your devices if you need to select another webcam)
 - all binaries should produce vidéos, that can be read by mpv, ffplay or any video reader
-- VP9 ha not been implemented yet (WIP)
-- the machine load is important, precisely for h264 encoding. Due to hw implementation not ready.
+- VP9 has not been implemented yet (WIP)
+- the machine load is important, precisely for h264 encoding. Due to hardware implementation (e.g. VAAPI) not ready.
 
 To build : 
 
