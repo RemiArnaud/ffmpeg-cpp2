@@ -7,6 +7,19 @@ Changelog  Copyright Eric Bachard  2020/04/22
 "                                                                                    "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+Added several demos :
+- webcam to MKV (h264 inside)  // big machine load, certainly some hidden issue to fix
+- webcam to MPEG2 (mpeg2 encoder)  // works well, but output file is ~ 6 times the previous case (h264)
+- webcam to MPEG4 (mpeg4 encoder)  // approximativaly the same filesize than the .mkv,but less load
+
+TO BE FIXED : NO sound yet.
+Fixed some other little issues.
+
+After some days of work, webcam to video works. The nightmare was caused by input/ouput possible pixel formats,
+and encoder accepting them, or sometimes not.
+
+
+2020 May 8th
 
 The regressions previously mentionned in print_info and in remusing seems to be fixed.
 
