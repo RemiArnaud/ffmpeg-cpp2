@@ -37,7 +37,12 @@ I created a CMakefile from scratch, and the lib is now built straight away. I'll
 ## Demos
 
 Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMint, but whatever the distribution, this should work anywhere
-
+- [ ] (WIP) mix the sound from a sound file with the stream coming from the webcam somewhat works.
+- [x] mjpeg (/dev/video*) to .mpg works (using mpeg4 encoder)
+- [x] mjpeg (/dev/video*) to .mpg works (using mpjeg2video encoder)
+- [x] mjpeg (/dev/video*) to .avi works (using h264 encoder)
+- [x] mjpeg (/dev/video*) to .mkv works (using h264 encoder)
+- [x] webcam to video : **works** with an mjpeg capable webcam, it is possible to record 720p@30fps, or 720p@24fps, or even 1080p@30fps using ffmpeg-cpp2
 - [x] decode_audio: **works OK**. The audio part is extracted as a data blob.
 - [x] decode_video: **works OK** ! big_buck_bunny.mp4 results in 1440 grey images (who can be assembled to retrieve the video)
 - [x] encode_audio: **works OK** //**don't forget to install libmp3lame AND to add --enable-libmp3lame at configure time with FFMPEG!**
@@ -53,6 +58,7 @@ Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMin
 
 ## TODO (Linux)
 
+- [ ] WIP : Improve pts. Currently, video can sometimes accelerate, and become unreadable (mainly the webcam to video) 
 - [x] DONE fix undefined behaviour with delete [done]
 - [x] fix all FFMPEG warnings (codec use is deprecated since .... )
 - [x] fix all other warnings : unused variables and more
