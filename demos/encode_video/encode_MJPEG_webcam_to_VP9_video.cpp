@@ -94,9 +94,13 @@ int main()
         vcodec->SetPreset("veryslow"); // fast, medium, slow slower, veryslow placebo
         vcodec->SetCrf(23);
 
-        int width = 1280;
-        int height = 720;
-        AVRational frameRate = {1, 30};
+        int width            = 1280;
+        int height           = 720;
+        int fps              = 30;
+
+        // FIXME : probably wrong
+        AVRational frameRate = {30 ,1 };
+
         AVPixelFormat pix_format = AV_PIX_FMT_YUVJ420P; // = V4L2_PIX_FMT_MJPEG
 
         codec->Open(width, height, &frameRate, pix_format);
