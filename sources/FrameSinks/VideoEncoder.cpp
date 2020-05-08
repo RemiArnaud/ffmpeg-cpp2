@@ -3,11 +3,13 @@
 #include "FFmpegException.h"
 #include "Muxing/VideoOutputStream.h"
 
+#include <iostream>
+
+
 using namespace std;
 
 namespace ffmpegcpp
 {
-
 	VideoEncoder::VideoEncoder(VideoCodec* p_codec, Muxer* p_muxer)
 	{
 		this->closedCodec = p_codec;
@@ -81,14 +83,23 @@ namespace ffmpegcpp
 		// 3. Otherwise, the default format of the codec
 		// the format is either the provided format, or the default format if it is not supported
 		AVPixelFormat format = finalPixelFormat;
-		if (format == AV_PIX_FMT_NONE) format = (AVPixelFormat)frame->format;
+
+		if (format == AV_PIX_FMT_NONE)
+                    format = (AVPixelFormat)frame->format;
+
 		if (!closedCodec->IsPixelFormatSupported(format)) format = closedCodec->GetDefaultPixelFormat();
+#ifdef DEBUG
+                std::cerr << __func__  << ": selected format is  " <<  format << "\n";
+#endif
 
 		// the frame rate is either the input frame rate, OR the default frame rate if the input frame rate
 		// is not supported, OR the explicitly chosen framerate.
 		AVRational frameRate = metaData->frameRate;
-		if (!closedCodec->IsFrameRateSupported(&frameRate)) frameRate = closedCodec->GetClosestSupportedFrameRate(frameRate);
-		if (finalFrameRateSet) frameRate = finalFrameRate;
+		if (!closedCodec->IsFrameRateSupported(&frameRate))
+                    frameRate = closedCodec->GetClosestSupportedFrameRate(frameRate);
+
+		if (finalFrameRateSet)
+                    frameRate = finalFrameRate;
 
 		// open the codec
 		codec = closedCodec->Open(width, height, &frameRate, format);
@@ -138,6 +149,7 @@ namespace ffmpegcpp
 		++frameNumber;
 
 		int ret = avcodec_send_frame(codec->GetContext(), frame);
+
 		if (ret < 0)
 		{
 			throw FFmpegException("Error sending a frame for encoding", ret);
@@ -151,6 +163,7 @@ namespace ffmpegcpp
 		if (codec == nullptr) return; // can't close if we were never opened
 
 		int ret = avcodec_send_frame(codec->GetContext(), NULL);
+
 		if (ret < 0)
 		{
 			throw FFmpegException("Error flushing codec after encoding", ret);
