@@ -30,11 +30,14 @@ namespace ffmpegcpp
         virtual bool IsDone();
         virtual void Step();
 
+        void Stop() { done = true;}
+
         ContainerInfo GetInfo();
         int GetFrameCount(int streamId);
 
         bool convertToRGB(int VideoStreamIndx, AVFormatContext *bAVFormatContext, AVCodecContext *bAVCodecContext, AVCodec *bAVCodec );
 
+        int  getVideoStreamIndx() { return m_VideoStreamIndx ;}
         void setVideoStreamDevice();
         const char* GetFileName();
 
@@ -47,7 +50,7 @@ namespace ffmpegcpp
         int m_width;
         int m_height;
         int m_framerate;
-
+        int m_VideoStreamIndx = 0;
 
         AVFormatContext* pAVFormatContextIn;
         AVDictionary * options;

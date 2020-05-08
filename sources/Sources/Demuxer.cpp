@@ -14,7 +14,6 @@ namespace ffmpegcpp
     {
     }
 
-
     Demuxer::Demuxer(const char* p_fileName, AVInputFormat* p_inputFormat, AVDictionary *p_format_opts)
     {
         this->m_fileName    = p_fileName;
@@ -83,6 +82,7 @@ namespace ffmpegcpp
         // Fixed by the operating system
         const char * input_device = "dshow"; // I'm using dshow when cross compiling :-)
 #elif defined(__linux__)
+
         // libavutil, pixdesc.h
         const char * pix_fmt_name = av_get_pix_fmt_name(AV_PIX_FMT_YUVJ420P); // = "mjpeg"
         enum AVPixelFormat pix_name = av_get_pix_fmt("mjpeg");
@@ -111,14 +111,17 @@ namespace ffmpegcpp
         av_dict_set(&options, framerate_option_name, frameRateValue, 0);
         std::cerr << "framerate_option_name :  " << framerate_option_name  << "\n";
         std::cerr << "frameRateValue        :  " << frameRateValue  << "\n";
-//        av_dict_set(&options, "framerate", "30", 0);
 
         av_dict_set(&options, "pixel_format", pix_fmt_name, 0);  //  "mjpeg" "yuvj420p"
         av_dict_set(&options, "use_wallclock_as_timestamps", "1", 0);
 
+        // FIXME : only for H264 (moov atom not found)
+        av_dict_set(&options, "movflags", "faststart", 0 );
+        ///ret = avformat_write_header( ofmt_ctx, &dict );
+
         if ((ret = avformat_open_input(&containerContext, m_fileName, m_inputFormat, &options)) < 0)
         {
-            std::cerr << "Failed to open input container "  <<  "\n";
+            std::cerr << "Failed to open input container. ret =  " <<  ret  <<  "\n";
             CleanUp();
             throw FFmpegException(std::string("Failed to open input container " + string(m_fileName)).c_str(), ret);
         }
@@ -166,6 +169,7 @@ namespace ffmpegcpp
             cout<<"Error : video streams not found in demuxer ctor";
         }
 
+        m_VideoStreamIndx = VideoStreamIndx;
         // inspired from https://code.mythtv.org/trac/ticket/13186?cversion=0&cnum_hist=2
         AVCodecContext *pAVCodecContext = NULL;
         pAVCodec = NULL;
@@ -365,6 +369,7 @@ namespace ffmpegcpp
     {
         return done;
     }
+
 
     void Demuxer::Step()
     {
