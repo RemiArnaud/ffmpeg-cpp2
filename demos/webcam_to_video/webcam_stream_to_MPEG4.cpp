@@ -40,11 +40,11 @@ void record_MPEG4()
     try
     {
 
-        AVPixelFormat pix_format = AV_PIX_FMT_YUVJ420P; // = V4L2_PIX_FMT_MJPEG
+        ///AVPixelFormat pix_format = AV_PIX_FMT_YUVJ420P; // = V4L2_PIX_FMT_MJPEG
         //AVPixelFormat pix_format = AV_PIX_FMT_NV12; // = V4L2_PIX_FMT_MJPEG
         int width  = 1280;
         int height = 720;
-        intfps = 30;
+        int fps = 30;
 
         // FIXME : probably plain wrong (lot of issues with timings)
         AVRational frameRate = { 30, 1 };
