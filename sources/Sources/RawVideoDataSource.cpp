@@ -15,10 +15,10 @@ namespace ffmpegcpp
 		Init(width, height, sourcePixelFormat, targetPixelFormat, framesPerSecond, output);
 	}
 
-	void RawVideoDataSource::Init(int width, int height, AVPixelFormat p_sourcePixelFormat, AVPixelFormat targetPixelFormat, int framesPerSecond, FrameSink* p_output)
+	void RawVideoDataSource::Init(int width, int height, AVPixelFormat sourcePixelFormat, AVPixelFormat targetPixelFormat, int framesPerSecond, FrameSink* p_output)
 	{
 		this->m_output = p_output->CreateStream();
-		this->m_sourcePixelFormat = p_sourcePixelFormat;
+		this->m_sourcePixelFormat = sourcePixelFormat;
 
 		// set up the time base
 		metaData.timeBase.num = 1;
