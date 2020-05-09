@@ -107,7 +107,7 @@ int main()
 
         PGMFileSink* fileSink = new PGMFileSink();
 
-        Demuxer *  demuxer = new Demuxer("/dev/video0", 1280, 720, 30);
+        Demuxer *  demuxer = new Demuxer("/dev/video0", 1280, 720, fps);
         demuxer->DecodeBestVideoStream(fileSink);
 
         // Prepare the output pipeline. This will push a small amount of frames to the file sink until it IsPrimed returns true.
