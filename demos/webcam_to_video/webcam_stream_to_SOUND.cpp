@@ -1,6 +1,6 @@
 
 /*
- * File webcam_stream_to_VP9.cpp
+ * File webcam_stream_to_SOUND.cpp
  * Copyright Eric Bachard / 2020 05 08
  * This document is under GPL v3 license
  * see : http://www.gnu.org/licenses/gpl-3.0.html
@@ -21,11 +21,10 @@ void record_VP9()
     Muxer* muxer = new Muxer("../videos/output_VP9.avi");
 
     // These are example video and audio sources used below.
-    const char* videoDevice = "/dev/video0";
+    // const char* videoDevice = "/dev/video0";
 
-    const char* audioDevice = "hwplug:1,0"; // testing
-    //const char* audioDevice = "hw:1,0"; // first webcam
-    //const char* audioDevice = "default";
+    const char* audioDevice = "hw:1,0";  // first webcam
+    //const char* audioDevice = "default"; // the current selected source
 
     const char * audioDeviceFormat = "alsa";
     int audioSampleRate = 44100;
@@ -33,7 +32,9 @@ void record_VP9()
 
     AudioCodec * audioCodec = new AudioCodec(AV_CODEC_ID_AAC);
 
+    // FIXME : should work, but maybe not the best moment ?
     // audioCodec->Open(40000, AV_SAMPLE_FMT_FLTP, audioSampleRate);
+
     /*
         AAC profile should be : 
         Name = "AAC_Profile_128k",
@@ -72,10 +73,16 @@ void record_VP9()
 
     lcodec->SetGenericOption("movflags", "+faststart");
 
+    //lcodec->SetProfile("high10"); // baseline, main, high, high10, high422
+    //lcodec->SetTune("film");  // film animation grain stillimage psnr ssim fastdecode zerolatency
+    //vcodec->SetPreset("veryslow"); // fast, medium, slow slower, veryslow placebo
+    //lcodec->SetCrf(23);
+
+
     // Configure the codec to not do compression, to use multiple CPU's and to go as fast as possible.
     lcodec->SetLossless(false);
     lcodec->SetCpuUsed(5);
-    lcodec->SetDeadline("realtime"); // other possibility : "good"
+    lcodec->SetDeadline("realtime"); // other case : good
     lcodec->SetGenericOption("low_power", "true");
 
     //   0       <------   18  <-------  23 -----> 28 ------> 51
@@ -98,32 +105,25 @@ void record_VP9()
         //AVPixelFormat outputPixFormat= AV_PIX_FMT_RGBA;
         AVPixelFormat outputPixFormat= AV_PIX_FMT_YUV420P;
 
-        VideoEncoder *   videoEncoder = new VideoEncoder(lcodec, muxer, frameRate, outputPixFormat);
+        // VideoEncoder *   videoEncoder = new VideoEncoder(lcodec, muxer, frameRate, outputPixFormat);
+
         AudioEncoder *   audioEncoder = new AudioEncoder(audioCodec, muxer);
+        RawAudioFileSource* audioFile = new RawAudioFileSource( audioDevice,
+                                                                audioDeviceFormat,
+                                                                audioSampleRate,
+                                                                audioChannels,
+                                                                audioEncoder);
 
-        RawAudioFileSource* audioFile = new RawAudioFileSource(audioDevice, audioDeviceFormat, audioSampleRate, audioChannels, audioEncoder);
-        Demuxer *           demuxer   = new Demuxer(videoDevice, width, height, fps);
-
-        // FIXME : how to sync videoand audio ?
-        //audioFile->DecodeBestAudioStream(audioEncoder);
-        demuxer->DecodeBestVideoStream(videoEncoder);
+        // audioFile->DecodeBestAudioStream(audioEncoder);   /// PROBABLY IMPORTANT : create 2 identical muxers, and sync
+        // Demuxer *           demuxer   = new Demuxer(videoDevice, width, height, fps);
+        // demuxer->DecodeBestVideoStream(videoEncoder);
 
         audioFile->PreparePipeline();
-        demuxer->PreparePipeline();
+        // demuxer->PreparePipeline();
 
-        int frameNumber = 0;
-
-        while (!demuxer->IsDone() && (frameNumber < 100))
+        while (!audioFile->IsDone())
         {
-            frameNumber = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
-            std::cerr << "frame number : " << frameNumber << "\n";
-
-            if (frameNumber > 100)
-                demuxer->Stop();
-
-            demuxer->Step();
             audioFile->Step();
-
         }
 
         // close the muxer and save the file to disk
@@ -132,9 +132,11 @@ void record_VP9()
         if (lcodec != nullptr)
             delete lcodec;
 
-        if (videoEncoder != nullptr)
-            delete videoEncoder;
+        // if (videoEncoder != nullptr)
+        //     delete videoEncoder;
 
+        if (audioFile != nullptr)
+            delete audioFile;
 
         delete muxer;
     }
@@ -149,7 +151,7 @@ int main(void)
 {
     avdevice_register_all();
     record_VP9();
-    std::cout << "Video + sound encoding complete!" << "\n";
+    std::cout << "Sound encoding complete!" << "\n";
 
     return 0;
 }
