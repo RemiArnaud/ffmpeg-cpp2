@@ -7,6 +7,30 @@ Changelog  Copyright Eric Bachard  2020/04/22
 "                                                                                    "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+Spent two days reading documentation around VAAPI. 
+Looks like Intel API cannot work without hack (as the one I found in a famous player source code)
+Libva + libva-utils are the best place to learn + another famous player.
+Added a new codec format in the sources : H264_VAAPI (not implemented, yet, but I know what has to be done)
+
+WIP : study the frameRate AVRational, and how it works. Unclear ...
+Improved VP9 and H264 videos createdwith the webcam : 
+- now, the videos are all clean, and good quality, and little size.
+- more paramaters are on, and the video can be read using any player
+
+TODO : add PTS and control them.
+
+Started playing with hardware acceleration. The best way to fill in a hard disk very fast :-)
+
+To bad to discover such hidden features, for Windows users only, or not free,  as usual. Means we pay hardware,
+but cannot it its features.
+
+
+URGENT, TODO : add audio stream coming from the webcam, and mux it with video !
+
+
+2020 May 10th
+
+
 Added several demos :
 - webcam to MKV (h264 inside)  // big machine load, certainly some hidden issue to fix
 - webcam to MPEG2 (mpeg2 encoder)  // works well, but output file is ~ 6 times the previous case (h264)
