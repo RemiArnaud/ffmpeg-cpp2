@@ -58,6 +58,7 @@ Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMin
 
 ## TODO (Linux)
 
+
 - [ ] WIP : Improve pts. Currently, video can sometimes accelerate, and become unreadable (mainly the webcam to video) 
 - [x] DONE fix undefined behaviour with delete [done]
 - [x] fix all FFMPEG warnings (codec use is deprecated since .... )
@@ -65,7 +66,7 @@ Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMin
 - [ ] create a list of what is currently doable
 - [ ] create some patterns, and a list of commonly used video codecs (vp9 / h264 / hevc / mpeg4 / mjpeg and some other)
 - [ ] create some patterns, and a list of commonly used audio codecs
-- [ ] make hwdecoders / encoders work [vaapi, drm in priority]
+- [ ] make hwdecoders / encoders work [vaapi, drm in priority]  Current status : hw_context created, hw_pixel_format ok, some buffers created
 - [ ] (more to come)
 # Usage 
 
