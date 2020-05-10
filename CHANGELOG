@@ -7,6 +7,13 @@ Changelog  Copyright Eric Bachard  2020/04/22
 "                                                                                    "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+I can record sound (alsa + ffmpeg). Should be the same on Windows (untested)
+Can record video + sound too. BUT no sound at the end. Investigating.
+
+
+2020 May 11th
+
+
 Spent two days reading documentation around VAAPI. Extremely difficult to find recent and working examples.
 Looks like Intel API (va/va*.h) cannot work without hack (as the one I found in a famous player source code)
 Libva + libva-utils are the best place to learn + another famous player source code.
