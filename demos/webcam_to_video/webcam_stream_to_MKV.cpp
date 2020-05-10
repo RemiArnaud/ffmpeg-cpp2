@@ -25,11 +25,18 @@ void record_MKV()
     H264Codec  * vcodec = new H264Codec();
     vcodec->SetGenericOption("b", "2M");
     vcodec->SetGenericOption("bit_rate", "2M");
-    vcodec->SetGenericOption("movflags", "faststart");
+    vcodec->SetGenericOption("movflags", "+faststart");
+    vcodec->SetGenericOption("qmin", "12");
+    vcodec->SetGenericOption("qmax", "34");
+
+    // FIXME : needs more tests
+    //vcodec->SetGenericOption("vbv-maxrate", "4M");
+    //vcodec->SetGenericOption("vbv-bufsize", "2M");
 
     vcodec->SetProfile("high10"); // baseline, main, high, high10, high422
     vcodec->SetTune("film");  // film animation grain stillimage psnr ssim fastdecode zerolatency
     vcodec->SetPreset("veryslow"); // fast, medium, slow slower, veryslow placebo
+
     vcodec->SetCrf(23);
 
     // Create a muxer that will output the video as MKV.
@@ -41,10 +48,10 @@ void record_MKV()
 
         int width  = 1280;
         int height = 720;
-        int fps = 30;
+        int fps = 24;
 
         // FIXME : timing is not precise, and probably wrong
-        AVRational frameRate = { 30, 1 };
+        AVRational frameRate = { 24, 1 };
 
         // All seem to work
         //AVPixelFormat input_pix_fmt= AV_PIX_FMT_NV12;
@@ -54,7 +61,6 @@ void record_MKV()
         VideoEncoder * videoEncoder = new VideoEncoder(vcodec, muxer, frameRate, outputPixFormat);
 
         Demuxer * demuxer = new Demuxer(videoDevice, width, height, fps);
-
         demuxer->DecodeBestVideoStream(videoEncoder);
         demuxer->PreparePipeline();
 
