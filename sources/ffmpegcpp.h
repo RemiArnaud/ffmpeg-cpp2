@@ -24,6 +24,7 @@
 #include "Codecs/JPGCodec.h"
 #include "Codecs/MJPEGCodec.h"
 #include "Codecs/H264Codec.h"
+#include "Codecs/H264_VAAPICodec.h"
 #include "Codecs/MPEG4Codec.h"
 #include "Codecs/VideoCodec.h"
 #include "Codecs/Codec.h"
