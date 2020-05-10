@@ -7,23 +7,24 @@ Changelog  Copyright Eric Bachard  2020/04/22
 "                                                                                    "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-Spent two days reading documentation around VAAPI. 
-Looks like Intel API cannot work without hack (as the one I found in a famous player source code)
-Libva + libva-utils are the best place to learn + another famous player.
+Spent two days reading documentation around VAAPI. Extremely difficult to find recent and working examples.
+Looks like Intel API (va/va*.h) cannot work without hack (as the one I found in a famous player source code)
+Libva + libva-utils are the best place to learn + another famous player source code.
+
 Added a new codec format in the sources : H264_VAAPI (not implemented, yet, but I know what has to be done)
 
 WIP : study the frameRate AVRational, and how it works. Unclear ...
+
 Improved VP9 and H264 videos createdwith the webcam : 
-- now, the videos are all clean, and good quality, and little size.
-- more paramaters are on, and the video can be read using any player
+- now, the videos are all clean, good quality, and little size.
+- more parameters are on, and the video can be read using any player.
 
 TODO : add PTS and control them.
 
-Started playing with hardware acceleration. The best way to fill in a hard disk very fast :-)
+Started playing with hardware acceleration. Looks like it's the best way to fill in a hard disk very fastly :-)
 
-To bad to discover such hidden features, for Windows users only, or not free,  as usual. Means we pay hardware,
-but cannot it its features.
-
+Too bad to discover such hidden features, for Windows users only, or not free,  as usual. Means we pay hardware,
+but cannot use its features without pay twice.
 
 URGENT, TODO : add audio stream coming from the webcam, and mux it with video !
 
