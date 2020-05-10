@@ -1,3 +1,7 @@
+
+https://trac.ffmpeg.org/ticket/7649
+
+
 KEY link : https://stackoverflow.com/questions/16667687/how-to-convert-rgb-from-yuv420p-for-ffmpeg-encoder
 
 
