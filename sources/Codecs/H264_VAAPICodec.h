@@ -100,9 +100,24 @@ namespace ffmpegcpp
 
 */
 		void SetCrf(int crf);
+
+// Hardware stuff (Intel here)
+    void InitHardwareDevice(const char *);
+
+    void SetHardwareAccelAPI(const char *);
+
+    void SetVAAPIDevice(const char *);
+
+    void SetHardwareAccelOutputFormat(const char *);
+
+    void SetHardwareAccelDevice(const char *);
+
+    void SetFilterHardwareDevice(const char *);
+
+// End hardware stuff
+
 	};
 }
-
 
 #endif /* __H264_VAAPICODEC_H__ */
 

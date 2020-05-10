@@ -21,6 +21,7 @@ namespace ffmpegcpp
 // no idea for Windows case, but certainly something exists already
 #ifdef __linux__
 	: VideoCodec("h264_vaapi")
+//	: VideoCodec("h264_v4l2m2m")
 #endif
     {
     }
@@ -44,5 +45,38 @@ namespace ffmpegcpp
     {
         SetOption("crf", crf);
     }
+// Hardware stuff (Intel here)
+    void H264_VAAPICodec::InitHardwareDevice(const char * init_hw_device)
+    {
+	SetOption("init_hw_device", init_hw_device);
+    }
+
+    void H264_VAAPICodec::SetHardwareAccelAPI(const char * hwaccel)
+    {
+	SetOption("hwaccel", hwaccel);
+    }
+
+    void H264_VAAPICodec::SetVAAPIDevice(const char * vaapi_device)
+    {
+	SetOption("vaapi_device", vaapi_device);
+    }
+
+    void H264_VAAPICodec::SetHardwareAccelOutputFormat(const char * hwaccel_output_format)
+    {
+	SetOption("hwaccel_output_format", hwaccel_output_format);
+    }
+
+    void H264_VAAPICodec::SetHardwareAccelDevice(const char * hwaccel_device)
+    {
+	SetOption("hwaccel_device", hwaccel_device);
+    }
+
+    void H264_VAAPICodec::SetFilterHardwareDevice(const char * filter_hw_device)
+    {
+	SetOption("filter_hw_device", filter_hw_device);
+    }
+
+// End hardware stuff
+
 }
 
