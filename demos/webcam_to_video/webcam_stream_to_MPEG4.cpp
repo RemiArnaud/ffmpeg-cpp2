@@ -20,7 +20,7 @@ void record_MPEG4()
     // These are example video and audio sources used below.
     const char* videoDevice = "/dev/video0";
 
-    Muxer * muxer = new Muxer("../videos/output_MPEG4.mpg");
+    Muxer * muxer = new Muxer("../videos/output_MPEG4.avi");
 
     //  OUTPUT CODEC, linked to the encoder ...
 
