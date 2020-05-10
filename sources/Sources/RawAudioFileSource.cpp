@@ -8,6 +8,7 @@ namespace ffmpegcpp
 {
 	RawAudioFileSource::RawAudioFileSource(const char* fileName, const char* inputFormat, int sampleRate, int channels, FrameSink* frameSink)
 	{
+            // fileName = hw::1,0 input format = alsa, sampleRate = 48000 (default)  channels= 2 (default)  frameSink = ? AudioDecoder() ?
 
 		// try to deduce the input format from the input format name
 		AVInputFormat *file_iformat;
@@ -21,6 +22,9 @@ namespace ffmpegcpp
 
 		av_dict_set_int(&format_opts, "sample_rate", sampleRate, 0);
 		av_dict_set_int(&format_opts, "channels", channels, 0);
+		av_dict_set_int(&format_opts, "b", 256000, 0);
+		av_dict_set_int(&format_opts, "minrate", 400000, 0);
+		av_dict_set_int(&format_opts, "maxrate", 400000, 0);
 
 		// create the demuxer
 		try
