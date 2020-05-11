@@ -1,3 +1,6 @@
+Paul Davis (how Alsa works + several clear code examples) : http://equalarea.com/paul/alsa-audio.html
+
+
 
 https://trac.ffmpeg.org/ticket/7649
 
