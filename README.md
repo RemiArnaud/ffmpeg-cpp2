@@ -37,7 +37,10 @@ I created a CMakefile from scratch, and the lib is now built straight away. I'll
 ## Demos
 
 Below, the example tested working on Linux (Intel x86_64, kernel4.15.x) LinuxMint, but whatever the distribution, this should work anywhere
-- [ ] (WIP) mix the sound from a sound file with the stream coming from the webcam somewhat works.
+
+- [ ] (WIP): mix the sound from a sound file with the stream coming from the webcam somewhat works (under run from the audio who stops immediately. Searching why ...)
+- [x] record a video coming from a webcam (mjpeg, mpeg2, mpeg4, h264 and hevc are working)
+- [x] record the sound coming from a webcam (e.g. using aac or mp3 codec currently)
 - [x] mjpeg (/dev/video*) to .mpg works (using mpeg4 encoder)
 - [x] mjpeg (/dev/video*) to .mpg works (using mpjeg2video encoder)
 - [x] mjpeg (/dev/video*) to .avi works (using h264 encoder)
