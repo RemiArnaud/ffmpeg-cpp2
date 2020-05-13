@@ -17,6 +17,7 @@ namespace ffmpegcpp
         Demuxer(const char* fileName);
         Demuxer(const char* fileName, int width, int height, int framerate);
         Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *inputFormatOptions);
+        Demuxer(const char* fileName, const char* inputFormat, int sampleRate, int channels, AudioFrameSink * p_audio_frameSink);
         Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *inputFormatOptions, AVFormatContext * aContainerContext);
         ~Demuxer();
 
@@ -35,10 +36,11 @@ namespace ffmpegcpp
         ContainerInfo GetInfo();
         int GetFrameCount(int streamId);
 
-        bool convertToRGB(int VideoStreamIndx, AVFormatContext *bAVFormatContext, AVCodecContext *bAVCodecContext, AVCodec *bAVCodec );
-
         int  getVideoStreamIndx() { return m_VideoStreamIndx ;}
+
+        void setAudioStreamDevice();
         void setVideoStreamDevice();
+
         const char* GetFileName();
 
     private:
@@ -50,12 +52,26 @@ namespace ffmpegcpp
         int m_width;
         int m_height;
         int m_framerate;
+
         int m_VideoStreamIndx = 0;
 
+        int frameCount = 0;
+
         AVFormatContext* pAVFormatContextIn;
+
         AVDictionary * options;
         AVCodec * pAVCodec;
         AVInputFormat * m_inputFormat;
+
+
+        const char* m_audio_device;
+
+        AVDictionary   *  m_audio_opts;
+        AVInputFormat  *  m_file_iformat;
+        AudioFrameSink *  m_audio_frameSink;
+        int               m_sampleRate;
+        int               m_channels;
+        int               m_AudioStreamIndx = 0;
 
         InputStream* GetInputStream(int index);
         InputStream* GetInputStreamById(int streamId);
