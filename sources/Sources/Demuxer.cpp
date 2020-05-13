@@ -67,7 +67,32 @@ namespace ffmpegcpp
     {
         // LINUX : fileName = hw::1,0; input format = alsa; sampleRate = 48000 (default); channels= 2 (default); frameSink = audioDecoder
         // WINDOWS : fileName = ?? ; input format = alsa; sampleRate = 48000 (default); channels= 2 (default); frameSink = audioDecoder
+/*
 
+         ~ $ arecord --dump-hw-params -D hw:1,0
+        Capture WAVE 'stdin' : Unsigned 8 bit, Fréquence 8000 Hz, Mono
+        HW Params of device "hw:1,0":
+        --------------------
+        ACCESS:  MMAP_INTERLEAVED RW_INTERLEAVED
+        FORMAT:  S16_LE
+        SUBFORMAT:  STD
+        SAMPLE_BITS: 16
+        FRAME_BITS: 32
+        CHANNELS: 2
+        RATE: [16000 32000]
+        PERIOD_TIME: [1000 8192000]
+        PERIOD_SIZE: [16 131072]
+        PERIOD_BYTES: [64 524288]
+        PERIODS: [2 1024]
+        BUFFER_TIME: [1000 16384000]
+        BUFFER_SIZE: [32 262144]
+        BUFFER_BYTES: [128 1048576]
+        TICK_TIME: ALL
+        --------------------
+        arecord: set_params:1299: Ce format d'échantillonage n'est pas disponible
+        Available formats:
+        - S16_LE
+*/
         m_audio_device = deviceName;
         m_sampleRate = sampleRate;
         m_channels = channels;
