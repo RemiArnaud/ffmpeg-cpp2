@@ -82,7 +82,8 @@ void record_VP9()
     // Configure the codec to not do compression, to use multiple CPU's and to go as fast as possible.
     lcodec->SetLossless(false);
     lcodec->SetCpuUsed(5);
-    lcodec->SetDeadline("realtime"); // other case : good
+    //lcodec->SetDeadline("realtime"); // other case : good
+    lcodec->SetDeadline("good"); // other case : good
     lcodec->SetGenericOption("low_power", "true");
 
     //   0       <------   18  <-------  23 -----> 28 ------> 51
@@ -108,6 +109,7 @@ void record_VP9()
         // VideoEncoder *   videoEncoder = new VideoEncoder(lcodec, muxer, frameRate, outputPixFormat);
 
         AudioEncoder *   audioEncoder = new AudioEncoder(audioCodec, muxer);
+
         RawAudioFileSource* audioFile = new RawAudioFileSource( audioDevice,
                                                                 audioDeviceFormat,
                                                                 audioSampleRate,
