@@ -1,5 +1,6 @@
 #include "AudioOutputStream.h"
 #include "FFmpegException.h"
+#include <iostream>
 
 using namespace std;
 namespace ffmpegcpp
@@ -82,6 +83,9 @@ namespace ffmpegcpp
 		if (stream->time_base.num != 0 && stream->avg_frame_rate.num != 0)
 		{
 			pkt->duration = stream->time_base.den / stream->time_base.num / stream->avg_frame_rate.num * stream->avg_frame_rate.den;
+                std::cerr << "stream->avg_frame_rate.num =  " <<  stream->avg_frame_rate.num << "\n";
+                std::cerr << "pkt->duration  " <<  pkt->duration << "\n";
+
 		}
 	}
 
