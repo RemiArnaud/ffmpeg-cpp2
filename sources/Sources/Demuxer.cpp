@@ -88,9 +88,9 @@ namespace ffmpegcpp
         av_dict_set_int(&m_audio_opts, "maxrate", 400000, 0);
         av_dict_set_int(&m_audio_opts, "b", 256000, 0);
         av_dict_set_int(&m_audio_opts, "thread_queue_size", 1024 , 0);
-//        av_dict_set_int(&m_audio_opts, "threads", 4 , 0);
-//        av_dict_set_int(&m_audio_opts, "frame_size", 1024, 0);
-//        av_dict_set_int(&m_audio_opts, "format", AV_SAMPLE_FMT_S16, 0);
+        av_dict_set_int(&m_audio_opts, "threads", 4 , 0);
+        av_dict_set_int(&m_audio_opts, "frame_size", 1024, 0);
+        av_dict_set_int(&m_audio_opts, "format", AV_SAMPLE_FMT_S16, 0);
         av_dict_set    (&m_audio_opts, "movflags", "+faststart", 0);
         av_dict_set    (&m_audio_opts, "use_wallclock_as_timestamps", "1", 0);
         av_dict_set_int(&m_audio_opts, "channels", m_channels, 0);
@@ -130,13 +130,12 @@ namespace ffmpegcpp
         {
             if( containerContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO ) // if video stream found then get the index.
             {
-                cout <<  "containerContext->streams["  << i <<  "] is an AVMEDIA_TYPE_VIDEO stream " << "\n";
+                cout <<  "containerContext->streams["  << i <<  "] is an AVMEDIA_TYPE_AUDIO stream " << "\n";
                 cout << "containerContext->->streams[" << i << "]->codec->codec_type = start + " 
                      << containerContext->streams[i]->codecpar->codec_type << "\n";
                 cout << "AVMEDIA_TYPE_UNKNOWN = -1, AVMEDIA_TYPE_VIDEO == 0, AVMEDIA_TYPE_AUDIO == 1,AVMEDIA_TYPE_DATA == 2, AVMEDIA_TYPE_SUBTITLE = 3 " <<  "\n";
                 cout << "containerContext->->streams[" << i << "]->codec->codec_id = " 
                      << containerContext->streams[i]->codecpar->codec_id << "\n";
-                cout << " (NONE = start+0, MJPEG == start+7, MPEG4 == start+12, RAWVIDEO == start+13, H264 == start+27 )" << "\n";
 
                 AudioStreamIndx = i;
                 break;
