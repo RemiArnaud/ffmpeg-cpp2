@@ -39,17 +39,6 @@ namespace ffmpegcpp
         inputStreams = new InputStream*[containerContext->nb_streams];
         for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
-/*
-            AVCodecParameters* par = containerContext->streams[i]->codecpar;
-
-            if  ((par->codec_type) == AVMEDIA_TYPE_VIDEO)
-            {
-                pAVCodec =  avcodec_find_encoder(containerContext->streams[i]->codecpar->codec_id);
-                m_width  = containerContext->streams[i]->codecpar->width;
-                m_height = containerContext->streams[i]->codecpar->height;
-                options  = containerContext->metadata;
-            }
-*/
             inputStreams[i] = nullptr;
         }
 
@@ -74,49 +63,153 @@ namespace ffmpegcpp
         setVideoStreamDevice();
     }
 
+    Demuxer::Demuxer(const char* deviceName, const char* inputFormat, int sampleRate, int channels, AudioFrameSink * p_frameSink)
+    {
+        // LINUX : fileName = hw::1,0; input format = alsa; sampleRate = 48000 (default); channels= 2 (default); frameSink = audioDecoder
+        // WINDOWS : fileName = ?? ; input format = alsa; sampleRate = 48000 (default); channels= 2 (default); frameSink = audioDecoder
+
+        m_audio_device = deviceName;
+        m_sampleRate = sampleRate;
+        m_channels = channels;
+        m_audio_frameSink = p_frameSink;
+
+        m_audio_opts = nullptr;
+
+        containerContext = avformat_alloc_context();
+
+        if (!(m_file_iformat = av_find_input_format(inputFormat)))
+        {
+            CleanUp();
+            throw FFmpegException(std::string("Unknown input format: " + string(inputFormat)).c_str());
+        }
+
+        av_dict_set_int(&m_audio_opts, "sample_rate", m_sampleRate, 0);
+        av_dict_set_int(&m_audio_opts, "minrate", 400000, 0);
+        av_dict_set_int(&m_audio_opts, "maxrate", 400000, 0);
+        av_dict_set_int(&m_audio_opts, "b", 256000, 0);
+        av_dict_set_int(&m_audio_opts, "thread_queue_size", 1024 , 0);
+//        av_dict_set_int(&m_audio_opts, "threads", 4 , 0);
+//        av_dict_set_int(&m_audio_opts, "frame_size", 1024, 0);
+//        av_dict_set_int(&m_audio_opts, "format", AV_SAMPLE_FMT_S16, 0);
+        av_dict_set    (&m_audio_opts, "movflags", "+faststart", 0);
+        av_dict_set    (&m_audio_opts, "use_wallclock_as_timestamps", "1", 0);
+        av_dict_set_int(&m_audio_opts, "channels", m_channels, 0);
+        setAudioStreamDevice ();
+
+        std::cerr << "Ctor completed " << "\n";
+    }
+
+    void Demuxer::setAudioStreamDevice ()
+    {
+        int ret = 0;
+        //containerContext->video_codec_id = AV_CODEC_ID_MJPEG;
+
+        if ((ret = avformat_open_input(&containerContext, m_audio_device, m_file_iformat, &m_audio_opts)) < 0)
+        {
+            std::cerr << "Failed to open input container. ret =  " <<  ret  <<  "\n";
+            CleanUp();
+            throw FFmpegException(std::string("Failed to open input container " + string(m_audio_device)).c_str(), ret);
+        }
+
+        if ( (ret = (avformat_find_stream_info(containerContext, NULL))) < 0)
+        {
+            CleanUp();
+            throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
+        }
+        av_dump_format(containerContext , 0 , m_audio_device , 0 );
+
+
+        //Demuxer::copyParameters(AVMEDIA_TYPE,int index )
+        //{
+
+        // retrieve stream information
+
+        int AudioStreamIndx = -1;
+
+        for(unsigned int i = 0; i < containerContext->nb_streams ;i++ )
+        {
+            if( containerContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO ) // if video stream found then get the index.
+            {
+                cout <<  "containerContext->streams["  << i <<  "] is an AVMEDIA_TYPE_VIDEO stream " << "\n";
+                cout << "containerContext->->streams[" << i << "]->codec->codec_type = start + " 
+                     << containerContext->streams[i]->codecpar->codec_type << "\n";
+                cout << "AVMEDIA_TYPE_UNKNOWN = -1, AVMEDIA_TYPE_VIDEO == 0, AVMEDIA_TYPE_AUDIO == 1,AVMEDIA_TYPE_DATA == 2, AVMEDIA_TYPE_SUBTITLE = 3 " <<  "\n";
+                cout << "containerContext->->streams[" << i << "]->codec->codec_id = " 
+                     << containerContext->streams[i]->codecpar->codec_id << "\n";
+                cout << " (NONE = start+0, MJPEG == start+7, MPEG4 == start+12, RAWVIDEO == start+13, H264 == start+27 )" << "\n";
+
+                AudioStreamIndx = i;
+                break;
+            }
+        }
+
+        if((AudioStreamIndx) == -1)
+        {
+            cout<<"Error : video streams not found in demuxer ctor";
+        }
+
+        m_AudioStreamIndx = AudioStreamIndx;
+        // inspired from https://code.mythtv.org/trac/ticket/13186?cversion=0&cnum_hist=2
+        AVCodecContext *pAVCodecContext = NULL;
+        pAVCodec = NULL;
+        pAVCodec = avcodec_find_decoder(containerContext->streams[m_AudioStreamIndx]->codecpar->codec_id);
+        pAVCodecContext = avcodec_alloc_context3(pAVCodec);
+        avcodec_parameters_to_context(pAVCodecContext, containerContext->streams[m_AudioStreamIndx]->codecpar);
+
+        inputStreams = new InputStream*[containerContext->nb_streams];
+
+        for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
+        {
+            inputStreams[i] = nullptr;
+        }
+
+        // initialize packet, set data to NULL, let the demuxer fill it
+        pkt = av_packet_alloc();
+
+        if (!pkt)
+        {
+            CleanUp();
+
+            throw FFmpegException(std::string("Failed to create packet for input stream").c_str());
+        }
+        av_init_packet(pkt);
+        pkt->data = NULL;
+        pkt->size = 0;
+
+        avcodec_close(pAVCodecContext);
+
+        //}
+    }
 
     void Demuxer::setVideoStreamDevice ()
     {
         int ret = 0;
 #ifdef _WIN32
-        // Fixed by the operating system
-        const char * input_device = "dshow"; // I'm using dshow when cross compiling :-)
+        const char * input_device = "dshow"; // Fixed by the operating system
 #elif defined(__linux__)
-
         // libavutil, pixdesc.h
         const char * pix_fmt_name = av_get_pix_fmt_name(AV_PIX_FMT_YUVJ420P); // = "mjpeg"
-        enum AVPixelFormat pix_name = av_get_pix_fmt("mjpeg");
-
-        cout<<"AVPixelFormat name of AV_PIX_FMT_YUVJ420P : " << pix_fmt_name << "\n";
-        cout<<"PixelFormat value for \"mjpeg\" : " << pix_name << "\n";
-
-        // Fixed by the operating system
         const char * input_device = "v4l2";
 #endif
-        containerContext = avformat_alloc_context();
+        if (containerContext == nullptr)
+            containerContext = avformat_alloc_context();
+
         containerContext->video_codec_id = AV_CODEC_ID_MJPEG;
 
         m_inputFormat = av_find_input_format(input_device);
 
-        // WORKS OK TOO
         char videoSize[32];
         sprintf(videoSize, "%dx%d", this->m_width, this->m_height);
         av_dict_set(&options, "video_size", videoSize, 0);
-        //av_dict_set(&options, "video_size", "1920x1080", 0); // Other way. Other usual values 1280x720@30fps
 
         const char * framerate_option_name = "framerate";
         char frameRateValue[10];
         sprintf(frameRateValue, "%d", this->m_framerate);
 
         av_dict_set(&options, framerate_option_name, frameRateValue, 0);
-        std::cerr << "framerate_option_name :  " << framerate_option_name  << "\n";
-        std::cerr << "frameRateValue        :  " << frameRateValue  << "\n";
-
         av_dict_set(&options, "pixel_format", pix_fmt_name, 0);  //  "mjpeg" "yuvj420p"
         av_dict_set(&options, "use_wallclock_as_timestamps", "1", 0);
-
-        // FIXME : only for H264 (moov atom not found)
-        av_dict_set(&options, "movflags", "faststart", 0 );
+        av_dict_set(&options, "movflags", "faststart", 0 ); // FIXME : only for H264 (moov atom not found)
         ///ret = avformat_write_header( ofmt_ctx, &dict );
 
         if ((ret = avformat_open_input(&containerContext, m_fileName, m_inputFormat, &options)) < 0)
@@ -125,10 +218,6 @@ namespace ffmpegcpp
             CleanUp();
             throw FFmpegException(std::string("Failed to open input container " + string(m_fileName)).c_str(), ret);
         }
-#ifdef DEBUG
-        else
-            std::cerr << "open input container() DONE"  <<  "\n";
-#endif
 
         // retrieve stream information
         if ( (ret = (avformat_find_stream_info(containerContext, NULL))) < 0)
@@ -136,14 +225,8 @@ namespace ffmpegcpp
             CleanUp();
             throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
         }
-#ifdef DEBUG
-        else
-            std::cerr << "avformat_find_stream_info() DONE"  <<  "\n";
-#endif
         av_dump_format(containerContext , 0 , m_fileName , 0 );
-#ifdef DEBUG
-        std::cerr << "av_dump_format() DONE"  <<  "\n";
-#endif
+
         int VideoStreamIndx = -1;
 
         for(unsigned int i=0; i<containerContext->nb_streams ;i++ )
@@ -180,6 +263,7 @@ namespace ffmpegcpp
         inputStreams = new InputStream*[containerContext->nb_streams];
 
 // TODO : understand why doing that
+
         for (unsigned int i = 0; i < containerContext->nb_streams; ++i)
         {
             inputStreams[i] = nullptr;
@@ -260,6 +344,8 @@ namespace ffmpegcpp
 
     void Demuxer::DecodeAudioStream(int streamIndex, FrameSink* frameSink)
     {
+        std::cerr << "Im in : " << __func__ << " line : " << __LINE__ << "\n";
+
         // each input stream can only be used once
         if (inputStreams[streamIndex] != nullptr)
         {
@@ -386,6 +472,7 @@ namespace ffmpegcpp
             {
                 InputStream* stream = inputStreams[i];
 
+
                 if (stream != nullptr)
                 {
                     pkt->stream_index = i;
@@ -409,10 +496,18 @@ namespace ffmpegcpp
 
         // decode the finished packet
         DecodePacket();
+
+        if (frameCount >360)
+        {
+            Stop();
+        }
+
     }
 
     void Demuxer::DecodePacket()
     {
+        std::cerr  << "frame : " <<  frameCount << "\n";
+
         int streamIndex = pkt->stream_index;
         InputStream* inputStream = inputStreams[streamIndex];
 
@@ -424,6 +519,8 @@ namespace ffmpegcpp
         // We need to unref the packet here because packets might pass by here
         // that don't have a stream attached to them. We want to dismiss them!
         av_packet_unref(pkt);
+
+        frameCount++;
     }
 
     ContainerInfo Demuxer::GetInfo()
@@ -459,6 +556,7 @@ namespace ffmpegcpp
             GetInputStream(i);
         }
 
+
         // Process the entire container so we can know how many frames are in each 
         while (!IsDone())
         {
@@ -472,83 +570,6 @@ namespace ffmpegcpp
     const char* Demuxer::GetFileName()
     {
         return m_fileName;
-    }
-
-
-    bool Demuxer::convertToRGB(int VideoStreamIndx, AVFormatContext *bAVFormatContext, AVCodecContext *bAVCodecContext, AVCodec * /*bAVCodec*/ )
-    {
-        AVPacket bAVPacket;
-        AVFrame *bAVFrame = NULL;
-        bAVFrame = av_frame_alloc();
-        AVFrame *bAVFrameRGB = NULL;
-        bAVFrameRGB = av_frame_alloc();
-
-        if(bAVFrame == NULL)
-            cout<<"\n\nframe alloc failed";
-
-        if(bAVFrameRGB == NULL)
-            cout<<"\n\nframe alloc RGB failed";
-
-        int numBytes;
-        uint8_t *buffer = NULL;
-        numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, bAVCodecContext->width, bAVCodecContext->height, 1);
-
-        buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-
-        av_image_fill_arrays (bAVFrameRGB->data,
-                              bAVFrameRGB->linesize,
-                              buffer,
-                              AV_PIX_FMT_RGB24,
-                              bAVCodecContext->width,
-                              bAVCodecContext->height, 1);
-
-
-        // TODO : FIXME once ffmpeg will have solved the problem
-        // https://news.ycombinator.com/item?id=20036710
-
-        struct SwsContext *sws_ctx = NULL;
-        sws_ctx = sws_getContext( bAVCodecContext->width,
-                                  bAVCodecContext->height,
-                                  bAVCodecContext->pix_fmt,
-                                  bAVCodecContext->width,
-                                  bAVCodecContext->height,
-                                  AV_PIX_FMT_RGB24,
-                                  SWS_BILINEAR,
-                                  NULL,NULL,NULL);
-        int framefinish = 0;
-
-        while(av_read_frame(bAVFormatContext,&bAVPacket) >=0)
-        {
-            if(bAVPacket.stream_index == VideoStreamIndx)
-            {
-                int ret = avcodec_receive_frame(bAVCodecContext, bAVFrame);
-
-                if (ret == 0)
-                    framefinish = 1;
-
-                if (ret == AVERROR(EAGAIN))
-                    ret = 0;
-
-                if (ret == 0)
-                    ret = avcodec_send_packet(bAVCodecContext, &bAVPacket);
-
-                if(framefinish)
-                {
-                  // convert image from native format to RGB
-                  sws_scale(sws_ctx , (uint8_t const* const *)bAVFrame->data ,
-                  bAVFrame->linesize , 0, bAVCodecContext->height,
-                  bAVFrameRGB->data , bAVFrameRGB->linesize);
-
-                    // save frame to disk
-
-                    //if(++i <= 100)
-                    //SaveMyFrame(bAVFrameRGB , bAVCodecContext->width , bAVCodecContext->height , i );
-                }
-            }
-        }
-        av_free(bAVFrame);
-        av_free(bAVFrameRGB);
-        return true;
     }
 }
 
