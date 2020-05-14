@@ -117,7 +117,7 @@ namespace ffmpegcpp
         av_dict_set_int(&m_audio_opts, "minrate", 400000, 0);
         av_dict_set_int(&m_audio_opts, "maxrate", 400000, 0);
         av_dict_set_int(&m_audio_opts, "b", 256000, 0);
-        av_dict_set_int(&m_audio_opts, "duration", 3600, 0);
+        av_dict_set_int(&m_audio_opts, "duration", 60, 0);
         // av_dict_set_int(&m_audio_opts, "thread_queue_size", 1024 , 0);
         av_dict_set_int(&m_audio_opts, "threads", 0 , 0);
         av_dict_set_int(&m_audio_opts, "frame_size", 1024, 0);
@@ -462,7 +462,7 @@ namespace ffmpegcpp
         // decode the finished packet
         DecodePacket();
 
-        if (frameCount > 1440)  // = exactly 1 min at 24 fps
+        if (frameCount > 1440)  // = exactly 1 min at 24 fps.Allows to compare the results
         {
             done = true;
             Stop();
