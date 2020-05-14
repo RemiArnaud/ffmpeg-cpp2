@@ -36,8 +36,6 @@ namespace ffmpegcpp
         ContainerInfo GetInfo();
         int GetFrameCount(int streamId);
 
-        bool convertToRGB(int VideoStreamIndx, AVFormatContext *bAVFormatContext, AVCodecContext *bAVCodecContext, AVCodec *bAVCodec );
-
         int  getVideoStreamIndx() { return m_VideoStreamIndx ;}
 
         void setAudioStreamDevice();
