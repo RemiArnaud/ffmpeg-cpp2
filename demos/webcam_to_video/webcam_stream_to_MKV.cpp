@@ -7,7 +7,7 @@
  */
 
 #include <iostream>
-
+#include <chrono>
 #include <ffmpegcpp.h>
 
 using namespace ffmpegcpp;
@@ -18,13 +18,11 @@ using std::cerr;
 #undef ALSA_BUFFER_SIZE_MAX
 #define ALSA_BUFFER_SIZE_MAX  524288
 
-
 void record_MKV()
 {
     // These are example video and audio sources used below.
-#ifndef VIDEO_MIX
     const char* videoDevice = "/dev/video0";
-#endif
+
     //  OUTPUT CODEC, linked to the encoder ...
     H264Codec  * vcodec = new H264Codec();
     vcodec->SetGenericOption("b", "2M");
@@ -36,12 +34,13 @@ void record_MKV()
     vcodec->SetGenericOption("vsync", "1");
     vcodec->SetGenericOption("threads", "4");
 
-    // ffmpeg -i input -c:v libx264 -b:v 1M -maxrate 1M -bufsize 2M -pass 2 output.mp4
-
     // FIXME : needs more tests
     //vcodec->SetGenericOption("pass", "2");
     vcodec->SetGenericOption("maxrate", "8M"); // or 4M
     vcodec->SetGenericOption("bufsize", "4M"); //    2M
+
+    vcodec->SetGenericOption("stream_name", "Webcam C922"); // pb : 
+
 
     vcodec->SetProfile("high10"); // baseline, main, high, high10, high422
     vcodec->SetTune("film");  // film animation grain stillimage psnr ssim fastdecode zerolatency
@@ -49,8 +48,9 @@ void record_MKV()
 
     vcodec->SetCrf(23);
 
-    //const char* audioDevice = "hw:1,0"; // first webcam   1 is DEV alsa parameter, 0 is 
-    const char* audioDevice = "default";
+    const char* audioDevice = "hw:1,0"; // first webcam   1 is DEV alsa parameter, 0 is 
+    //const char* audioDevice = "default";
+    //const char* audioDevice = "pulse";
 
     const char * audioDeviceFormat = "alsa";
     int audioSampleRate = 44100;
@@ -58,14 +58,13 @@ void record_MKV()
 
     AudioCodec * audioCodec = new AudioCodec(AV_CODEC_ID_AAC);
 
-    //audioCodec->Open(64000, AV_SAMPLE_FMT_FLTP, audioSampleRate);
-
     // Create a muxer that will output the video as MKV.
     Muxer* muxer = new Muxer("../videos/output_H264.mp4");  // good result
     // create the different components that make this come together
+
+
     try
     {
-
         int width  = 1280;
         int height = 720;
         int fps = 24;
@@ -90,11 +89,24 @@ void record_MKV()
         audioFile->PreparePipeline();
         demuxer->PreparePipeline();
 
+        auto start = std::chrono::system_clock::now();
+
         while (!demuxer->IsDone() && !audioFile->IsDone())
         {
+            auto current_time = std::chrono::system_clock::now();
             //int frameNumber = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
+
+            auto elapsed = current_time - start;
+            std::cout << "elapsed.count() =  "<< elapsed.count() << '\n';
+
             demuxer->Step();
             audioFile->Step();
+
+            if ((elapsed.count()) > (120e9)) // 120 s
+             {
+                demuxer->Stop();
+                audioFile->Stop();
+            }
         }
 
         // close the muxer and save the file to disk
@@ -121,8 +133,7 @@ void record_MKV()
 int main(void)
 {
     avdevice_register_all();
-//    avdevice_register_all();
-//    avformat_network_init();
+    //avformat_network_init(); // future use
 
     record_MKV();
 
