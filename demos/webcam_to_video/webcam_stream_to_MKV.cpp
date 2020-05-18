@@ -102,7 +102,7 @@ void record_MKV()
             demuxer->Step();
             audioFile->Step();
 
-            if ((elapsed.count()) > (120e9)) // 120 s
+            if ((elapsed.count()) > (60e9)) // 120 s
              {
                 demuxer->Stop();
                 audioFile->Stop();
