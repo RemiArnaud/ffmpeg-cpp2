@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+#include <chrono>
 
 #include <ffmpegcpp.h>
 
@@ -93,18 +94,18 @@ void record_VP9()
     // create the different components that make this come together
     try
     {
-        int width  = 1280;
-        int height = 720;
-        int fps = 24;
+//Video        int width  = 1280;
+//Video        int height = 720;
+//Video        int fps = 24;
 
         // FIXME : timing is not precise, and probably wrong
         //AVRational frameRate = { 30, 1 };
-        AVRational frameRate = { 24, 1 };
+//Video        AVRational frameRate = { 24, 1 };
 
         // All seem to work
         //AVPixelFormat input_pix_fmt= AV_PIX_FMT_NV12;
         //AVPixelFormat outputPixFormat= AV_PIX_FMT_RGBA;
-        AVPixelFormat outputPixFormat= AV_PIX_FMT_YUV420P;
+//Video        AVPixelFormat outputPixFormat= AV_PIX_FMT_YUV420P;
 
         // VideoEncoder *   videoEncoder = new VideoEncoder(lcodec, muxer, frameRate, outputPixFormat);
 
@@ -123,9 +124,20 @@ void record_VP9()
         audioFile->PreparePipeline();
         // demuxer->PreparePipeline();
 
+        auto start = std::chrono::system_clock::now();
+
         while (!audioFile->IsDone())
         {
+            auto current_time = std::chrono::system_clock::now();
+            //int frameNumber = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
+
+            auto elapsed = current_time - start;
+            std::cout << "elapsed.count() =  "<< elapsed.count() << '\n';
+
             audioFile->Step();
+
+            if ((elapsed.count()) > (30e9)) // 30s = 1min => 1440 video frames exactly at 24 fps
+                audioFile->Stop();
         }
 
         // close the muxer and save the file to disk
