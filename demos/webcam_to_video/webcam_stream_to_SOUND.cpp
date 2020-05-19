@@ -72,7 +72,7 @@ void record_VP9()
     lcodec->SetGenericOption("vbv-maxrate", "1000");  // 1M
     lcodec->SetGenericOption("vbv-bufsize", "2000"); // 2M 
 
-    lcodec->SetGenericOption("movflags", "+faststart");
+    lcodec->SetGenericOption("movflags", "faststart");
 
     //lcodec->SetProfile("high10"); // baseline, main, high, high10, high422
     //lcodec->SetTune("film");  // film animation grain stillimage psnr ssim fastdecode zerolatency
@@ -136,7 +136,7 @@ void record_VP9()
 
             audioFile->Step();
 
-            if ((elapsed.count()) > (30e9)) // 30s = 1min => 1440 video frames exactly at 24 fps
+            if ((elapsed.count()) > (30e9)) // 30s. If 1min it gives 1440 video frames exactly at 24 fps
                 audioFile->Stop();
         }
 
