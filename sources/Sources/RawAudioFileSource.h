@@ -19,8 +19,9 @@ namespace ffmpegcpp
 		virtual bool IsDone();
 		virtual void Step();
 
-	private:
+                void Stop() { demuxer->Stop(); }
 
+	private:
 		void CleanUp();
 
 		Demuxer* demuxer = nullptr;
