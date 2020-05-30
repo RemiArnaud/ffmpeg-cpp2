@@ -50,8 +50,9 @@ void record_VP9()
 
         while (!audioFile->IsDone())
         {
+            // of course, this will replaced by the start / stop button
+            // waiting, it helps a lot to see the difficulties ffmpegs has to solve with timings
             auto current_time = std::chrono::steady_clock::now();
-
             std::chrono::duration<double> elapsed_seconds = current_time - start;
 
             std::cout << "elapsed time  :   "<< elapsed_seconds.count() << '\n';
