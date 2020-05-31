@@ -317,9 +317,6 @@ namespace ffmpegcpp
     {
         std::cerr << "Im in : " << __func__ << " line : " << __LINE__ << "\n";
 
-        if (frameCount > 1000 )
-            done = true;
-
         // each input stream can only be used once
         if (inputStreams[streamIndex] != nullptr)
         {
@@ -470,12 +467,6 @@ namespace ffmpegcpp
 
         // decode the finished packet
         DecodePacket();
-
-//        if (frameCount > 720)  // = exactly 1 min at 24 fps.Allows to compare the results
-//        {
-//            done = true;
-//            Stop();
-//        }
     }
 
     void Demuxer::DecodePacket()
