@@ -35,3 +35,17 @@ This part is Linux only
 /source/ffmpeg-cpp/simple_interface_demo/obj/x64
 /source/ffmpeg-cpp/simple_interface/Debug/simple_interface.tlog
 /source/ffmpeg-cpp/simple_interface/Debug
+demos/webcam_to_video/build/webcam_stream_to_MKV
+demos/webcam_to_video/build/webcam_stream_to_MPEG2
+demos/webcam_to_video/build/webcam_stream_to_MPEG4
+demos/webcam_to_video/build/webcam_stream_to_SOUND
+demos/webcam_to_video/build/webcam_stream_to_VP9
+
+demos/webcam_to_video/videos/output_H264.mp4
+demos/webcam_to_video/videos/output_H264.mkv
+demos/webcam_to_video/videos/output_VP9.mkv
+demos/webcam_to_video/videos/output_VP9.avi
+demos/webcam_to_video/videos/output_MPEG4.avi
+demos/webcam_to_video/videos/output_MPEG2.mpg
+
+
