@@ -67,9 +67,6 @@ void record_VP9()
         // close the muxer and save the file to disk
         muxer->Close();
 
-        if (lcodec != nullptr)
-            delete lcodec;
-
         if (audioFile != nullptr)
             delete audioFile;
 
