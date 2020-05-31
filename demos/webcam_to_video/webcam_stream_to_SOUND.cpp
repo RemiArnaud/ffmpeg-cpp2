@@ -23,7 +23,8 @@ void record_VP9()
 
     // These are example video and audio sources used below.
     // const char* videoDevice = "/dev/video0";
-    const char* audioDevice = "hw:1,0";  // first webcam
+    //const char* audioDevice = "hw:1,0";  // first webcam
+    const char* audioDevice = "pulse";  // first webcam
     //const char* audioDevice = "default"; // the current selected source
 
     const char * audioDeviceFormat = "alsa";
