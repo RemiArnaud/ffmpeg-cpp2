@@ -20,8 +20,21 @@ using std::cerr;
 
 void record_MKV()
 {
+
+    // Create a muxer that will output the video as MKV.
+    //Muxer* muxer = new Muxer("../videos/output_H264.mp4");  // good result
+    // create the different components that make this come together
+    Muxer* muxer = new Muxer("../videos/output_H264.mkv");  // good result
+
     // These are example video and audio sources used below.
     const char* videoDevice = "/dev/video0";
+    const char* audioDevice = "hw:1,0"; // first webcam   1 is DEV alsa parameter, 0 is 
+    //const char* audioDevice = "default";
+    //const char* audioDevice = "pulse";
+
+    const char * audioDeviceFormat = "alsa";
+    int audioSampleRate = 44100;
+    int audioChannels   = 2;
 
     //  OUTPUT CODEC, linked to the encoder ...
     H264Codec  * vcodec = new H264Codec();
@@ -48,19 +61,9 @@ void record_MKV()
 
     vcodec->SetCrf(23);
 
-    const char* audioDevice = "hw:1,0"; // first webcam   1 is DEV alsa parameter, 0 is 
-    //const char* audioDevice = "default";
-    //const char* audioDevice = "pulse";
-
-    const char * audioDeviceFormat = "alsa";
-    int audioSampleRate = 44100;
-    int audioChannels   = 2;
 
     AudioCodec * audioCodec = new AudioCodec(AV_CODEC_ID_AAC);
 
-    // Create a muxer that will output the video as MKV.
-    Muxer* muxer = new Muxer("../videos/output_H264.mp4");  // good result
-    // create the different components that make this come together
 
 
     try
