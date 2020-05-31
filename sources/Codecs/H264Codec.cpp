@@ -41,5 +41,11 @@ namespace ffmpegcpp
     {
         SetOption("crf", crf);
     }
+
+    void H264Codec::SetMovFlags(const char * movflags)
+    {
+        SetOption("movflags", movflags);
+    }
+
 }
 

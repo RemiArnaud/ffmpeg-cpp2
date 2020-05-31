@@ -95,6 +95,10 @@ namespace ffmpegcpp
 
 */
         void SetCrf(int crf);
+
+
+        void SetMovFlags(const char * flags);
+
     };
 }
 
