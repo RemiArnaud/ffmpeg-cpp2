@@ -89,21 +89,20 @@ void record_MKV()
         audioFile->PreparePipeline();
         demuxer->PreparePipeline();
 
-        auto start = std::chrono::system_clock::now();
+        auto start = std::chrono::steady_clock::now();
 
         while (!demuxer->IsDone() && !audioFile->IsDone())
         {
-            auto current_time = std::chrono::system_clock::now();
-            //int frameNumber = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
 
-            auto elapsed = current_time - start;
-            std::cout << "elapsed.count() =  "<< elapsed.count() << '\n';
+            auto current_time = std::chrono::steady_clock::now();
+            std::chrono::duration<double> elapsed_seconds = current_time - start;
+            std::cout << "elapsed time  :   "<< elapsed_seconds.count() << '\n';
 
             demuxer->Step();
             audioFile->Step();
 
-            if ((elapsed.count()) > (20e9)) // 20 s
-             {
+            if ((elapsed_seconds.count()) > (20)) // 20 s
+            {
                 demuxer->Stop();
                 audioFile->Stop();
             }
