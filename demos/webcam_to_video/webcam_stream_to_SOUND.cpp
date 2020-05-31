@@ -1,6 +1,7 @@
 
 /*
  * File webcam_stream_to_SOUND.cpp
+ * This example code helps to record webcam sound, and create a sound file (audio Codec is AAC currently, but can be modified)
  * Copyright Eric Bachard / 2020 05 08
  * This document is under GPL v3 license
  * see : http://www.gnu.org/licenses/gpl-3.0.html
