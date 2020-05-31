@@ -17,13 +17,11 @@ using std::cerr;
 
 void record_VP9()
 {
-
     // Create a muxer that will output the video as MKV.
     Muxer* muxer = new Muxer("../videos/output_VP9.mkv");
 
     // These are example video and audio sources used below.
     // const char* videoDevice = "/dev/video0";
-
     const char* audioDevice = "hw:1,0";  // first webcam
     //const char* audioDevice = "default"; // the current selected source
 
@@ -57,10 +55,9 @@ void record_VP9()
 
             std::cout << "elapsed time  :   "<< elapsed_seconds.count() << '\n';
 
-
             audioFile->Step();
 
-            if ((elapsed_seconds.count()) > (30)) // 30s. If 1min it gives 1440 video frames exactly at 24 fps
+            if ((elapsed_seconds.count()) > (20)) // 20s. If 1min it gives 1440 video frames exactly at 24 fps
                 audioFile->Stop();
         }
 

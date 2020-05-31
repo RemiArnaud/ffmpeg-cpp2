@@ -90,7 +90,6 @@ void record_VP9()
         int fps = 24;
 
         // FIXME : timing is not precise, and probably wrong
-        //AVRational frameRate = { 30, 1 };
         AVRational frameRate = { 24, 1 };
 
         // All seem to work
