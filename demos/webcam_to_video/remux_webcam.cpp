@@ -117,8 +117,7 @@ void record_Video()
 
 void create_final_Video()
 {
-
-    const char * final_file = "../videos/final_video.mp4";  // h264 + aac
+    const char * final_file = "../videos/final_video.mp4";  // h264 + aac (or vp9 + aac)
 
     Muxer* AVmuxer = new Muxer(final_file);
 
@@ -171,12 +170,10 @@ void create_final_Video()
 }
 
 
-
 int main(void)
 {
     avdevice_register_all();
     //avformat_network_init(); // future use
-
     bRecording = true;
 
     std::thread first (record_Video);
@@ -184,15 +181,13 @@ int main(void)
 
     auto start = std::chrono::steady_clock::now();
     auto current_time = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsed_seconds = current_time - start;
-
-    do 
+         std::chrono::duration<double> elapsed_seconds = current_time - start;
+    do
     {
         current_time = std::chrono::steady_clock::now();
         elapsed_seconds = current_time - start;
 
-    } while ((elapsed_seconds.count()) < (60));
-
+    } while ((elapsed_seconds.count()) < (20));
 
     bRecording = false;
 
