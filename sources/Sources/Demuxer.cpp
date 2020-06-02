@@ -173,6 +173,8 @@ namespace ffmpegcpp
 
         m_inputFormat = av_find_input_format(input_device);
 
+        options= nullptr;
+
         char videoSize[32];
         sprintf(videoSize, "%dx%d", this->m_width, this->m_height);
         av_dict_set(&options, "video_size", videoSize, 0);
