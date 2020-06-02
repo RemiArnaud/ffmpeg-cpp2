@@ -33,7 +33,7 @@ void record_Audio()
     const char * audioDeviceFormat = "alsa";
 
     Muxer* Amuxer  = new Muxer(audio_file);
-    int audioSampleRate = 48000;
+    int audioSampleRate = 44100;
     int audioChannels   = 2;
 
     AudioCodec         *   audioCodec = new AudioCodec(AV_CODEC_ID_AAC);
@@ -107,7 +107,7 @@ void record_Video()
 
 void create_final_Video()
 {
-    const char * final_file = "../videos/final_video.mkv";  // h264 + aac (or vp9 + aac)
+    const char * final_file = "../videos/final_video.mp4";  // h264 + aac (or vp9 + aac)
 
     Muxer* AVmuxer = new Muxer(final_file);
 
@@ -176,7 +176,7 @@ int main(void)
         current_time = std::chrono::steady_clock::now();
         elapsed_seconds = current_time - start;
 
-    } while ((elapsed_seconds.count()) < (20));
+    } while ((elapsed_seconds.count()) < (60));
 
     bRecording = false;
 
@@ -189,13 +189,10 @@ int main(void)
 
 #define TEST
 #ifdef TEST
-    std::remove("file1.txt"); // delete file
-
     std::remove(audio_file);
     std::remove(video_file);
 
- 
-    bool failed = (!std::ifstream(audio_file) || !std::ifstream(video_file));
+     bool failed = (std::ifstream(audio_file) || std::ifstream(video_file));
 
     if(failed)
     {
