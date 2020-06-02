@@ -10,6 +10,7 @@
 #include <chrono>
 #include <ffmpegcpp.h>
 #include <thread>         // std::thread
+#include <fstream>        // std::remove
 
 static bool bRecording = false;
 
@@ -20,13 +21,10 @@ using std::cerr;
 //#ifdef ALSA_BUFFER_SIZE_MAX
 #undef ALSA_BUFFER_SIZE_MAX
 #define ALSA_BUFFER_SIZE_MAX  524288
-//#define ALSA_BUFFER_SIZE_MAX  1048596
 
 const char * audio_file = "../videos/audio.mp4";  // aac (s32le ?)
 const char * video_file = "../videos/video_H264.mp4";  // h264
 
-
-//LINK http://www.cplusplus.com/reference/thread/thread/
 
 void record_Audio()
 {
@@ -35,14 +33,9 @@ void record_Audio()
     const char * audioDeviceFormat = "alsa";
 
     Muxer* Amuxer  = new Muxer(audio_file);
-
-    // OUTPUT AUDIO CODEC
-
-    //int audio_bitRate    = 128000;
-    int audioSampleRate = 44100;
+    int audioSampleRate = 48000;
     int audioChannels   = 2;
 
-    //  DEFAULT, SHOULD WORK (.mp4 or .mkv)
     AudioCodec         *   audioCodec = new AudioCodec(AV_CODEC_ID_AAC);
     AudioEncoder       *   audioEncoder = new AudioEncoder(audioCodec, Amuxer);
 
@@ -68,16 +61,15 @@ void record_Audio()
         delete audioEncoder;
 
     delete Amuxer;
-
 }
+
 
 void record_Video()
 {
-
     int width  = 1280; // 1920;
     int height = 720;  // 1080;
     int fps = 24;  // Logitech prefered fps value
-    // FIXME : timing is not precise, and probably wrong
+
     AVRational frameRate = { 24, 1 };
 
     // These are example video and audio sources used below.
@@ -85,8 +77,6 @@ void record_Video()
     AVPixelFormat outputPixFormat= AV_PIX_FMT_NV12;
 
     Muxer* Vmuxer = new Muxer(video_file);
-
-    //  OUTPUT VIDEO CODEC, linked to the encoder ...
     H264Codec  * vcodec = new H264Codec();
 
     VideoEncoder * videoEncoder = new VideoEncoder(vcodec, Vmuxer, frameRate, outputPixFormat);
@@ -117,14 +107,12 @@ void record_Video()
 
 void create_final_Video()
 {
-    const char * final_file = "../videos/final_video.mp4";  // h264 + aac (or vp9 + aac)
+    const char * final_file = "../videos/final_video.mkv";  // h264 + aac (or vp9 + aac)
 
     Muxer* AVmuxer = new Muxer(final_file);
 
     AudioCodec * faudioCodec = new AudioCodec(AV_CODEC_ID_AAC);
     H264Codec  * fvcodec = new H264Codec();
-
-    // create the different components that make this come together
 
     try
     {
@@ -151,9 +139,11 @@ void create_final_Video()
         // can be written to disk efficiently.
         while ( (!videoContainer->IsDone()) || (!audioContainer->IsDone()))
         {
-            //  timestamps issue ?
-            if (!videoContainer->IsDone()) videoContainer->Step();
-            if (!audioContainer->IsDone()) audioContainer->Step();
+            if (!videoContainer->IsDone())
+                videoContainer->Step();
+
+            if (!audioContainer->IsDone())
+                audioContainer->Step();
         }
 
         // Save everything to disk by closing the muxer.
@@ -166,7 +156,6 @@ void create_final_Video()
     }
 
     delete AVmuxer;
-
 }
 
 
@@ -197,6 +186,23 @@ int main(void)
     create_final_Video();
 
     std::cout << "Encoding complete!" << "\n";
+
+#define TEST
+#ifdef TEST
+    std::remove("file1.txt"); // delete file
+
+    std::remove(audio_file);
+    std::remove(video_file);
+
+ 
+    bool failed = (!std::ifstream(audio_file) || !std::ifstream(video_file));
+
+    if(failed)
+    {
+        std::perror("Error opening deleted file");
+        return 1;
+    }
+#endif
 
     return 0;
 }
