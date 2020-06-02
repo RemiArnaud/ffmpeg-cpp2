@@ -94,7 +94,7 @@ void record_MKV()
 
         auto start = std::chrono::steady_clock::now();
 
-        while (!demuxer->IsDone() && !audioFile->IsDone())
+        while (!demuxer->IsDone() || !audioFile->IsDone())
         {
 
             auto current_time = std::chrono::steady_clock::now();
