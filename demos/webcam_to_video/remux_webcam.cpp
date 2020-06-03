@@ -165,8 +165,8 @@ int main(void)
     //avformat_network_init(); // future use
     bRecording = true;
 
-    std::thread first (record_Video);
-    std::thread second (record_Audio);
+    std::thread first (record_Audio);
+    std::thread second (record_Video);
 
     auto start = std::chrono::steady_clock::now();
     auto current_time = std::chrono::steady_clock::now();
