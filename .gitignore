@@ -49,3 +49,5 @@ demos/webcam_to_video/videos/output_MPEG4.avi
 demos/webcam_to_video/videos/output_MPEG2.mpg
 
 
+*.db
+.vs/

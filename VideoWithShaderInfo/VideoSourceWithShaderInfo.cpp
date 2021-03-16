@@ -30,13 +30,11 @@ void VideoInputStreamWithShaderInfo::WriteFrame(AVFrame* frame, StreamData* meta
 
 	sws_scale(m_pConvContext, pFrame->data, pFrame->linesize, 0, m_nSrcHeight, m_pFrame->data, m_pFrame->linesize);
 
+	// add shader patch data here ! 
 
 	m_pOutput->WriteFrame(m_pFrame->data[0], 4 * m_pOutput->GetWidth());
 
 
-
-	//rgb = generate_rgb(m_pOutput->GetWidth(), m_pOutput->GetHeight(), frameNumber, rgb);
-	//m_pOutput->WriteFrame(rgb, 4 * m_pOutput->GetWidth());
 	++frameNumber;
 }
 
