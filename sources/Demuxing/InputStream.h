@@ -11,9 +11,11 @@ namespace ffmpegcpp
 	{
 
 	public:
-
+		InputStream();
 		InputStream(AVFormatContext* format, AVStream* stream);
 		~InputStream();
+
+		void Init(AVFormatContext* format, AVStream* stream);
 
 		void Open(FrameSink* frameSink);
 
@@ -22,8 +24,23 @@ namespace ffmpegcpp
 
 		bool IsPrimed();
 		int GetFramesProcessed();
+		
+		virtual void WriteFrame(AVFrame* frame, StreamData* metadata) {}
 
 		virtual void AddStreamInfo(ContainerInfo* info) = 0;
+		bool IsReady() { return m_bIsReady; }
+		AVFrame*GetFrame() 
+		{
+			return frame;
+		}
+		AVCodecContext* GetContext()
+		{
+			return codecContext;
+		}
+		StreamData* GetMetadata()
+		{
+			return metaData;
+		}
 
 	protected:
 
@@ -42,7 +59,7 @@ namespace ffmpegcpp
 		AVRational timeBaseCorrectedByTicksPerFrame;
 
 		FrameSinkStream* output = nullptr;
-
+		bool m_bIsReady;
 		AVFrame* frame;
 
 		StreamData* metaData = nullptr;

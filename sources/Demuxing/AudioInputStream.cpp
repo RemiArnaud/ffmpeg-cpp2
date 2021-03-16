@@ -4,6 +4,10 @@
 
 namespace ffmpegcpp
 {
+	AudioInputStream::AudioInputStream() : InputStream()
+	{
+
+	}
 	AudioInputStream::AudioInputStream(AVFormatContext* p_format, AVStream* p_stream)
 		: InputStream(p_format, p_stream)
 	{

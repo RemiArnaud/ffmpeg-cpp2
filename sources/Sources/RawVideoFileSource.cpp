@@ -23,8 +23,6 @@ namespace ffmpegcpp
             throw e;
         }
     }
-    // only testng on Linux for the moment, but Windows should work. MacOS X = don't care
-#ifdef __linux__
 
     RawVideoFileSource::RawVideoFileSource(const char* fileName, int d_width, int d_height, int d_framerate)
     {
@@ -41,11 +39,8 @@ namespace ffmpegcpp
             CleanUp();
             throw e;
         }
-
-
     }
 
-#endif  /*  __linux__ */
 
         // Doesn't work for now. See the header for more info.
         /*RawVideoFileSource::RawVideoFileSource(const char* fileName, int width, int height, const char* frameRate, AVPixelFormat format, VideoFrameSink* frameSink)

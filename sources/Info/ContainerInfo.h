@@ -4,18 +4,16 @@
 #include "VideoStreamInfo.h"
 #include "AudioStreamInfo.h"
 
-#ifdef __linux__
 #include <vector>
-#endif
 
 namespace ffmpegcpp
 {
 	struct ContainerInfo
 	{
-		long durationInMicroSeconds;
+		int64_t durationInMicroSeconds;
 		float durationInSeconds;
 		float start;
-		float bitRate;
+		double bitRate;
 		const AVInputFormat* format;
 
 		std::vector<VideoStreamInfo> videoStreams;

@@ -5,6 +5,7 @@
 #include "GeneratedAudioSource.h"
 
 #include <ffmpegcpp.h>
+#include <conio.h>
 
 using namespace ffmpegcpp;
 using namespace std;
@@ -33,26 +34,22 @@ void PlayDemo(int argc, char** argv)
 
 	// hard-code the settings here, but let them be overridden by the arguments
 	string inputAudioSource = "CONTAINER"; // options are RAW, ENCODED, CONTAINER, GENERATED
-	string inputVideoSource = "ENCODED"; // options are RAW, ENCODED, CONTAINER, GENERATED
-#ifdef __linux__
+	string inputVideoSource = "CONTAINER"; // options are RAW, ENCODED, CONTAINER, GENERATED
 	string outputAudioCodec = "AAC"; // Linux can do that. options are MP2, AAC, NONE
-#else
-	string outputAudioCodec = "NONE"; // NONE by default elsewhere
-#endif
-#ifdef HAVE_NVIDIA 
-	string outputVideoCodec = "H264NV"; // options are H264, H265, VP9, NONE (H264 and H265 only work on Nvidia hardware)
-#else
+//#ifdef HAVE_NVIDIA 
+	string outputVideoCodec = "H265"; // options are H264, H265, VP9, NONE (H264 and H265 only work on Nvidia hardware)
+/*#else
         // f... NVIDIA btw
 	string outputVideoCodec = "VP9"; // options are H264, H265, VP9, NONE (H264 and H265 only work on Nvidia hardware)
-#endif
+#endif*/
 	string outputContainerName = "out.mp4"; // container format is deduced from extension so use a known one
 
 	// you can use any filter string that you can use in the ffmpeg command-line here
 	// set the filter to NULL to disable filtering.
 	// See https://trac.ffmpeg.org/wiki/FilteringGuide for more info
 	// This example rotates the entire video and then puts a vignette on top of it.
-	const char* videoFilterConfig = "transpose=cclock[middle];[middle]vignette";
-	//const char* videoFilterConfig = NULL;
+	//const char* videoFilterConfig = "transpose=cclock[middle];[middle]vignette";
+	const char* videoFilterConfig = NULL;
 
 	// if command line is specified, we overwrite our hard-coded settings
 	if (argc >= 6)
@@ -298,6 +295,6 @@ int main(int argc, char **argv)
 	PlayDemo(argc, argv);
 
 	cout << "Encoding complete!" << endl;
-
+	_getch();
 	return 0;
 }

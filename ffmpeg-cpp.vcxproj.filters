@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="sources\AudioFormatConverter.cpp" />
+    <ClCompile Include="sources\CodecDeducer.cpp" />
+    <ClCompile Include="sources\Codecs\AudioCodec.cpp" />
+    <ClCompile Include="sources\Codecs\Codec.cpp" />
+    <ClCompile Include="sources\Codecs\H264Codec.cpp" />
+    <ClCompile Include="sources\Codecs\H264NVEncCodec.cpp" />
+    <ClCompile Include="sources\Codecs\H264_VAAPICodec.cpp" />
+    <ClCompile Include="sources\Codecs\H265NVEncCodec.cpp" />
+    <ClCompile Include="sources\Codecs\JPGCodec.cpp" />
+    <ClCompile Include="sources\Codecs\MJPEGCodec.cpp" />
+    <ClCompile Include="sources\Codecs\MPEG4Codec.cpp" />
+    <ClCompile Include="sources\Codecs\PNGCodec.cpp" />
+    <ClCompile Include="sources\Codecs\VP9Codec.cpp" />
+    <ClCompile Include="sources\Codecs\VideoCodec.cpp" />
+    <ClCompile Include="sources\Demuxing\AudioInputStream.cpp" />
+    <ClCompile Include="sources\Demuxing\InputStream.cpp" />
+    <ClCompile Include="sources\Demuxing\StreamData.cpp" />
+    <ClCompile Include="sources\Demuxing\VideoInputStream.cpp" />
+    <ClCompile Include="sources\FFmpegException.cpp" />
+    <ClCompile Include="sources\FrameContainer.cpp" />
+    <ClCompile Include="sources\FrameSinks\AudioEncoder.cpp" />
+    <ClCompile Include="sources\FrameSinks\AudioFilter.cpp" />
+    <ClCompile Include="sources\FrameSinks\Filter.cpp" />
+    <ClCompile Include="sources\FrameSinks\FrameSinkStream.cpp" />
+    <ClCompile Include="sources\FrameSinks\OneInputFrameSink.cpp" />
+    <ClCompile Include="sources\FrameSinks\VideoEncoder.cpp" />
+    <ClCompile Include="sources\FrameSinks\VideoFilterInput.cpp" />
+    <ClCompile Include="sources\Muxing\AudioOutputStream.cpp" />
+    <ClCompile Include="sources\Muxing\Muxer.cpp" />
+    <ClCompile Include="sources\Muxing\OutputStream.cpp" />
+    <ClCompile Include="sources\Muxing\VideoOutputStream.cpp" />
+    <ClCompile Include="sources\OpenCodec.cpp" />
+    <ClCompile Include="sources\Sources\Demuxer.cpp" />
+    <ClCompile Include="sources\Sources\EncodedFileSource.cpp" />
+    <ClCompile Include="sources\Sources\RawAudioDataSource.cpp" />
+    <ClCompile Include="sources\Sources\RawAudioFileSource.cpp" />
+    <ClCompile Include="sources\Sources\RawVideoDataSource.cpp" />
+    <ClCompile Include="sources\Sources\RawVideoFileSource.cpp" />
+    <ClCompile Include="sources\VideoFormatConverter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4D59D64E-0A55-33C7-8995-4CAF4F241BBA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

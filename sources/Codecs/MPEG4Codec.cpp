@@ -16,9 +16,7 @@ namespace ffmpegcpp
     // CTor
     MPEG4Codec::MPEG4Codec()
 // no idea for Windows case, but certainly something exists already
-#ifdef __linux__
 	: VideoCodec(AV_CODEC_ID_MPEG4)
-#endif
     {
     }
 

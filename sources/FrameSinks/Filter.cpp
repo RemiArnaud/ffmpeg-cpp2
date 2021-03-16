@@ -1,6 +1,7 @@
 #include "Filter.h"
 #include "FFmpegException.h"
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -56,7 +57,7 @@ namespace ffmpegcpp
 
 			// fetch one frame from each input and use it to construct the filter
 			AVFrame *frame;
-			for (int i = inputs.size() - 1; i >= 0; --i)
+			for (int i = (int)inputs.size() - 1; i >= 0; --i)
 			{
 				if (!inputs[i]->PeekFrame(&frame))
 				{
@@ -98,6 +99,9 @@ namespace ffmpegcpp
 			// we don't use these
 			avfilter_inout_free(&gis);
 			avfilter_inout_free(&gos);
+
+			char *sDump=avfilter_graph_dump(filter_graph, NULL);
+			printf("%s", sDump);
 
 			// Fetch all input buffer sources and the output buffer sink from the graph.
 			for (unsigned int i = 0; i < filter_graph->nb_filters; ++i)
@@ -152,7 +156,7 @@ namespace ffmpegcpp
 			uint64_t channelLayout = frame->channel_layout;
 			if (channelLayout == 0) channelLayout = av_get_default_channel_layout(frame->channels);
 			snprintf(args, argsLength,
-				"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%lu",
+				"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%llu",
 				metaData->timeBase.num, metaData->timeBase.den, frame->sample_rate,
 				av_get_sample_fmt_name((AVSampleFormat)frame->format), channelLayout);
 		}
@@ -205,7 +209,7 @@ namespace ffmpegcpp
 		// until we can configure the filter graph!
 		VideoFilterInput* input = new VideoFilterInput();
 		inputs.push_back(input);
-		return new FrameSinkStream(this, inputs.size() - 1);
+		return new FrameSinkStream(this,(int) inputs.size() - 1);
 	}
 
 	void Filter::WriteFrame(int streamIndex, AVFrame* frame, StreamData* metaData)

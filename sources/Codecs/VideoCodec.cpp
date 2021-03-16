@@ -4,7 +4,8 @@
 #include <limits>
 #include <iostream>
 #endif
-
+#include<iostream>
+#include <string>
 /*
 // Source : https://www.hardening-consulting.com/posts/20170625-utiliser-vaapi-avec-ffmpeg.html
 static enum AVPixelFormat vaapi_get_format(AVCodecContext *ctx, const enum AVPixelFormat *fmt)

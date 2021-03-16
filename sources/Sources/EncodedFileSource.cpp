@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "EncodedFileSource.h"
 #include "FFmpegException.h"
 #include "CodecDeducer.h"
@@ -167,8 +168,7 @@ namespace ffmpegcpp
 		data = buffer;
 		while (data_size > 0)
 		{
-			ret = av_parser_parse2(parser, codecContext, &pkt->data, &pkt->size,
-				data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+			ret = av_parser_parse2(parser, codecContext, &pkt->data, &pkt->size, data, (int) data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
 			if (ret < 0)
 			{
 				throw FFmpegException(std::string("Error while parsing file").c_str(), ret);

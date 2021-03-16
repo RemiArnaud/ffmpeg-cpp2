@@ -1,12 +1,23 @@
 #include "InputStream.h"
 #include "CodecDeducer.h"
 #include "FFmpegException.h"
-
+#include <string>
 using namespace std;
 
 namespace ffmpegcpp
 {
+
+	InputStream::InputStream()
+	{
+
+	}
+
 	InputStream::InputStream(AVFormatContext* p_format, AVStream* p_stream)
+	{
+		Init(p_format, p_stream);
+	}
+
+	void InputStream::Init(AVFormatContext* p_format, AVStream* p_stream)
 	{
 		this->stream = p_stream;
 		this->format = p_format;
@@ -71,7 +82,8 @@ namespace ffmpegcpp
 
 	void InputStream::Open(FrameSink* frameSink)
 	{
-		output = frameSink->CreateStream();
+		if(frameSink)
+			output = frameSink->CreateStream();
 	}
 
 	void InputStream::CleanUp()
@@ -132,7 +144,7 @@ namespace ffmpegcpp
 		{
 			throw FFmpegException(std::string("Error submitting the packet to the decoder").c_str(), ret);
 		}
-
+		m_bIsReady = false;
 		/* read all the output frames (in general there may be any number of them */
 		while (ret >= 0)
 		{
@@ -143,7 +155,7 @@ namespace ffmpegcpp
 			{
 				throw FFmpegException(std::string("Error during decoding").c_str(), ret);
 			}
-
+			m_bIsReady = true;
 			// put default settings from the stream into the frame
 			if (!frame->sample_aspect_ratio.num)
 			{
@@ -160,8 +172,8 @@ namespace ffmpegcpp
 			// The time_base is filled in in the codecContext after the first frame is decoded
 			// so we can fetch it from there.
 			if (output == nullptr)
-			{
-				// No frame sink specified - just release the frame again.
+			{				
+				WriteFrame(frame, metaData);
 			}
 			else
 			{
@@ -183,7 +195,10 @@ namespace ffmpegcpp
 
 	bool InputStream::IsPrimed()
 	{
-		return output->IsPrimed();
+		if (output)
+			return output->IsPrimed();
+		else
+			return true;
 	}
 
 	float InputStream::CalculateBitRate(AVCodecContext* ctx)

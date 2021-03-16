@@ -11,11 +11,12 @@ namespace ffmpegcpp
 	{
 
 	public:
-
+		VideoInputStream();
 		VideoInputStream(AVFormatContext* format, AVStream* stream);
 		~VideoInputStream();
 
 		void AddStreamInfo(ContainerInfo* info);
+		
 
 	protected:
 

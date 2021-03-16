@@ -21,11 +21,11 @@ namespace ffmpegcpp
         Demuxer(const char* fileName, AVInputFormat* inputFormat, AVDictionary *inputFormatOptions, AVFormatContext * aContainerContext);
         ~Demuxer();
 
-        void DecodeBestAudioStream(FrameSink* frameSink);
-        void DecodeBestVideoStream(FrameSink* frameSink);
+        void DecodeBestAudioStream(FrameSink* frameSink, InputStream* pInputStream = nullptr);
+        void DecodeBestVideoStream(FrameSink* frameSink, InputStream* pInputStream = nullptr);
 
-        void DecodeAudioStream(int streamId, FrameSink* frameSink);
-        void DecodeVideoStream(int streamId, FrameSink* frameSink);
+        void DecodeAudioStream(int streamId, FrameSink* frameSink, InputStream* pInputStream = nullptr);
+        void DecodeVideoStream(int streamId, FrameSink* frameSink, InputStream* pInputStream = nullptr);
 
         virtual void PreparePipeline();
         virtual bool IsDone();
@@ -42,6 +42,17 @@ namespace ffmpegcpp
         void setVideoStreamDevice();
 
         const char* GetFileName();
+
+		InputStream* GetInputStream(int index, bool bDontCreate=true, InputStream* pVideoInputStream = nullptr, InputStream* pAudioInputStream = nullptr);
+		InputStream* GetInputStreamById(int streamId);		
+		int GetInputStreamCount() 
+		{
+			if (containerContext)
+				return containerContext->nb_streams;
+			else
+				return 0;
+		}
+
 
     private:
 
@@ -74,8 +85,6 @@ namespace ffmpegcpp
         int               m_channels;
         int               m_AudioStreamIndx = 0;
 
-        InputStream* GetInputStream(int index);
-        InputStream* GetInputStreamById(int streamId);
 
         //std::vector<StreamInfo> GetStreamInfo(AVMediaType mediaType);
         //StreamInfo CreateInfo(int streamIndex, AVStream* stream, AVCodec* codec);

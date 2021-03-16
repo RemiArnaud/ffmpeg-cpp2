@@ -10,7 +10,7 @@ namespace ffmpegcpp
 	{
 
 	public:
-
+		AudioInputStream();
 		AudioInputStream(AVFormatContext* format, AVStream* stream);
 		~AudioInputStream();
 
