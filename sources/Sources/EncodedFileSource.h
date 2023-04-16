@@ -3,6 +3,7 @@
 #include "ffmpeg.h"
 #include "FrameSinks/FrameSink.h"
 #include "InputSource.h"
+#include <string>
 
 namespace ffmpegcpp
 {

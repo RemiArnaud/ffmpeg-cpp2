@@ -43,9 +43,9 @@ namespace ffmpegcpp
         std::vector<AVFilterContext*> m_bufferSources;
 
         AVMediaType m_targetMediaType;
-		FrameSinkStream* m_target;
+        FrameSinkStream * m_target;
 
-		std::string m_filterString;
+        const char * m_filterString;
 
         AVFilterGraph * m_filter_graph = nullptr;
         AVFilterContext * m_buffersink_ctx = nullptr;

@@ -11,8 +11,8 @@ namespace ffmpegcpp {
 	class Muxer
 	{
 	public:
-		Muxer(const std::string & fileName);
-		~Muxer();
+        Muxer(const std::string & fileName);
+        ~Muxer();
 		void AddOutputStream(OutputStream* stream);
 		void WritePacket(AVPacket* pkt);
 		void Close();

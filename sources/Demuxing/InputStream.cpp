@@ -60,7 +60,59 @@ namespace ffmpegcpp
 		{
 			throw FFmpegException(std::string("Could not allocate frame").c_str());
 		}
-	}
+    }
+    void InputStream::Init(AVFormatContext* p_format, AVStream* p_stream)
+    {
+        m_stream = p_stream;
+        m_format = p_format;
+
+        // find decoder for the stream
+        const AVCodec* codec = CodecDeducer::DeduceDecoder(m_stream->codecpar->codec_id);
+        if (!codec)
+        {
+            CleanUp();
+            throw FFmpegException(std::string("Failed to find codec for stream " + to_string(m_stream->index)).c_str());
+        }
+
+        // Allocate a codec context for the decoder
+        m_codecContext = avcodec_alloc_context3(codec);
+        if (!m_codecContext)
+        {
+            CleanUp();
+            throw FFmpegException(std::string("Failed to allocate the codec context for " + string(codec->name)).c_str());
+        }
+
+        m_codecContext->framerate = m_stream->avg_frame_rate;
+
+        // Copy codec parameters from input stream to output codec context
+        int ret;
+        if ((ret = avcodec_parameters_to_context(m_codecContext, m_stream->codecpar)) < 0)
+        {
+            throw FFmpegException(std::string("Failed to copy " + string(codec->name) + " codec parameters to decoder context").c_str(), ret);
+        }
+
+        // before we open it, we let our subclasses configure the codec context as well
+        ConfigureCodecContext();
+
+        // Init the decoders
+        if ((ret = avcodec_open2(m_codecContext, codec, NULL)) < 0)
+        {
+            throw FFmpegException(std::string("Failed to open codec " + string(codec->name)).c_str(), ret);
+        }
+
+        // calculate the "correct" time_base
+        // TODO this is definitely an ugly hack but right now I have no idea on how to fix this properly.
+        timeBaseCorrectedByTicksPerFrame.num = m_codecContext->time_base.num;
+        timeBaseCorrectedByTicksPerFrame.den = m_codecContext->time_base.den;
+        timeBaseCorrectedByTicksPerFrame.num *= m_codecContext->ticks_per_frame;
+
+        // assign the frame that will be read from the container
+        m_frame = av_frame_alloc();
+        if (!m_frame)
+        {
+            throw FFmpegException(std::string("Could not allocate frame").c_str());
+        }
+    }
 
 	InputStream::~InputStream()
 	{
@@ -74,7 +126,8 @@ namespace ffmpegcpp
 
 	void InputStream::Open(FrameSink* frameSink)
 	{
-		m_output = frameSink->CreateStream();
+        if(frameSink)
+            m_output = frameSink->CreateStream();
 	}
 
 	void InputStream::CleanUp()
@@ -135,6 +188,7 @@ namespace ffmpegcpp
 		{
 			throw FFmpegException(std::string("Error submitting the packet to the decoder").c_str(), ret);
 		}
+        m_bIsReady = false;
 
 		/* read all the output frames (in general there may be any number of them */
 		while (ret >= 0)
@@ -145,7 +199,8 @@ namespace ffmpegcpp
 			else if (ret < 0)
 			{
 				throw FFmpegException(std::string("Error during decoding").c_str(), ret);
-			}
+            }
+            m_bIsReady = true;
 
 			// put default settings from the stream into the frame
 			if (!m_frame->sample_aspect_ratio.num)
@@ -165,6 +220,7 @@ namespace ffmpegcpp
 			if (m_output == nullptr)
 			{
 				// No frame sink specified - just release the frame again.
+                WriteFrame(m_frame, m_metaData);
 			}
 			else
 			{
@@ -185,9 +241,12 @@ namespace ffmpegcpp
 	}
 
 	bool InputStream::IsPrimed()
-	{
-		return m_output->IsPrimed();
-	}
+    {
+        if (m_output)
+            return m_output->IsPrimed();
+        else
+            return true;
+    }
 
 	float InputStream::CalculateBitRate(AVCodecContext* ctx)
 	{

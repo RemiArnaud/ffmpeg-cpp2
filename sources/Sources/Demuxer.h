@@ -23,11 +23,11 @@ namespace ffmpegcpp
         Demuxer(const std::string & fileName, const AVInputFormat * inputFormat, AVDictionary * inputFormatOptions, AVFormatContext * aContainerContext);
         ~Demuxer();
 
-        void DecodeBestAudioStream(FrameSink* frameSink);
-        void DecodeBestVideoStream(FrameSink* frameSink);
+        void DecodeBestAudioStream(FrameSink * frameSink, InputStream* pInputStream = nullptr);
+        void DecodeBestVideoStream(FrameSink * frameSink, InputStream* pInputStream = nullptr);
 
-        void DecodeAudioStream(int streamId, FrameSink* frameSink);
-        void DecodeVideoStream(int streamId, FrameSink* frameSink);
+        void DecodeAudioStream(int streamId, FrameSink * frameSink, InputStream * pInputStream = nullptr);
+        void DecodeVideoStream(int streamId, FrameSink * frameSink, InputStream * pInputStream = nullptr);
 
         virtual void PreparePipeline();
         virtual bool IsDone();
@@ -43,7 +43,7 @@ namespace ffmpegcpp
         void setAudioStreamDevice();
         void setVideoStreamDevice();
 
-        const char* GetFileName();
+        std::string GetFileName();
 
         bool hasMaxFrameCount() const;
         int maxFrameCount();
@@ -51,7 +51,7 @@ namespace ffmpegcpp
     private:
         bool m_done = false;
 
-        const char * m_fileName;
+        std::string m_fileName;
 
         int m_width;
         int m_height;
@@ -79,7 +79,8 @@ namespace ffmpegcpp
         int               m_channels;
         int               m_AudioStreamIndx = 0;
 
-        InputStream* GetInputStream(int index);
+        InputStream* GetInputStream(int index, bool bDontCreate
+            , InputStream* pVideoInputStream = nullptr, InputStream * pAudioInputStream = nullptr);
         InputStream* GetInputStreamById(int streamId);
 
         //std::vector<StreamInfo> GetStreamInfo(AVMediaType mediaType);

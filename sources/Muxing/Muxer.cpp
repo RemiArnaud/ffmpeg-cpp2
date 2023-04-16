@@ -10,7 +10,7 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	Muxer::Muxer(const std::string & fileName)
+    Muxer::Muxer(const std::string & fileName)
 	{
         m_fileName = fileName;
 #ifdef DBBUG

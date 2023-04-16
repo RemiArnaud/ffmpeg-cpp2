@@ -16,7 +16,7 @@ namespace ffmpegcpp
 
     Demuxer::Demuxer(const std::string & p_fileName, const AVInputFormat * p_inputFormat, AVDictionary * p_format_opts)
     {
-        m_fileName    = p_fileName.c_str();
+        m_fileName    = p_fileName;
 
         int ret = 0;// open input file, and allocate format context
 
@@ -133,11 +133,11 @@ namespace ffmpegcpp
         av_dict_set_int(&m_audio_opts, "frames", 32, 0);
 //!!        av_dict_set_int(&m_audio_opts, "format", AV_SAMPLE_FMT_S16, 0);
         av_dict_set_int(&m_audio_opts, "format", AV_SAMPLE_FMT_S32P, 0);
-//        av_dict_set    (&m_audio_opts, "movflags", "faststart", 0);
+        av_dict_set    (&m_audio_opts, "movflags", "faststart", 0);
 
         av_dict_set    (&m_audio_opts, "use_wallclock_as_timestamps", "1", 0);
-//        av_dict_set_int(&m_audio_opts, "async", 1000, 0);
-//        av_dict_set_int(&m_audio_opts, "aresample", 1000, 0);
+        av_dict_set_int(&m_audio_opts, "async", 1000, 0);
+        av_dict_set_int(&m_audio_opts, "aresample", 1000, 0);
         av_dict_set_int(&m_audio_opts, "channels", m_channels, 0);
         av_dict_set    (&m_audio_opts, "stream_name", "webcam C922", 0);
 
@@ -194,7 +194,7 @@ namespace ffmpegcpp
         av_dict_set(&m_options, "movflags", "faststart", 0 ); // FIXME : only for H264 (moov atom not found)
         ///ret = avformat_write_header( ofmt_ctx, &dict );
 
-        if ((ret = avformat_open_input(&m_containerContext, m_fileName, m_inputFormat, &m_options)) < 0)
+        if ((ret = avformat_open_input(&m_containerContext, m_fileName.c_str(), m_inputFormat, &m_options)) < 0)
         {
             std::cerr << "Failed to open input container. ret =  " <<  ret  <<  "\n";
             CleanUp();
@@ -207,7 +207,7 @@ namespace ffmpegcpp
             CleanUp();
             throw FFmpegException(std::string("Failed to read streams from " + string(m_fileName)).c_str(), ret);
         }
-        av_dump_format(m_containerContext , 0 , m_fileName , 0 );
+        av_dump_format(m_containerContext , 0 , m_fileName.c_str(), 0 );
 
         m_VideoStreamIndx = setStreamIndexAndCopyParameters(AVMEDIA_TYPE_VIDEO);
     }
@@ -294,7 +294,7 @@ namespace ffmpegcpp
         }
     }
 
-    void Demuxer::DecodeBestAudioStream(FrameSink* frameSink)
+    void Demuxer::DecodeBestAudioStream(FrameSink* frameSink, InputStream * pInputStream)
     {
         int ret = av_find_best_stream(m_containerContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
 
@@ -304,10 +304,10 @@ namespace ffmpegcpp
         }
 
         int streamIndex = ret;
-        return DecodeAudioStream(streamIndex, frameSink);
+        return DecodeAudioStream(streamIndex, frameSink, pInputStream);
     }
 
-    void Demuxer::DecodeBestVideoStream(FrameSink* frameSink)
+    void Demuxer::DecodeBestVideoStream(FrameSink * frameSink, InputStream * pInputStream)
     {
         int ret = av_find_best_stream(m_containerContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 
@@ -317,10 +317,10 @@ namespace ffmpegcpp
         }
 
         int streamIndex = ret;
-        return DecodeVideoStream(streamIndex, frameSink);
+        return DecodeVideoStream(streamIndex, frameSink, pInputStream);
     }
 
-    void Demuxer::DecodeAudioStream(int streamIndex, FrameSink* frameSink)
+    void Demuxer::DecodeAudioStream(int streamIndex, FrameSink * frameSink, InputStream * pInputStream)
     {
         std::cerr << "Im in : " << __func__ << " line : " << __LINE__ << "\n";
 
@@ -331,14 +331,14 @@ namespace ffmpegcpp
         }
 
         // create the stream
-        InputStream* inputStream = GetInputStream(streamIndex);
+        InputStream* inputStream = GetInputStream(streamIndex, false, nullptr, pInputStream);
         inputStream->Open(frameSink);
 
         // remember and return
         m_inputStreams[streamIndex] = inputStream;
     }
 
-    void Demuxer::DecodeVideoStream(int streamIndex, FrameSink* frameSink)
+    void Demuxer::DecodeVideoStream(int streamIndex, FrameSink * frameSink, InputStream * pInputStream)
     {
         // each input stream can only be used once
         if (m_inputStreams[streamIndex] != nullptr)
@@ -347,18 +347,20 @@ namespace ffmpegcpp
         }
 
         // create the stream
-        InputStream* inputStream = GetInputStream(streamIndex);
+        InputStream* inputStream = GetInputStream(streamIndex, false, pInputStream);
         inputStream->Open(frameSink);
 
         // remember and return
         m_inputStreams[streamIndex] = inputStream;
     }
 
-    InputStream* Demuxer::GetInputStream(int streamIndex)
+    InputStream* Demuxer::GetInputStream(int streamIndex, bool bDontCreate
+        , InputStream* pVideoInputStream, InputStream* pAudioInputStream)
     {
         // already exists
         if (m_inputStreams[streamIndex] != nullptr) return m_inputStreams[streamIndex];
-
+        if(bDontCreate)
+            return nullptr;
         // The stream doesn't exist but we already processed all our frames, so it makes no sense
         // to add it anymore.
         if (IsDone())
@@ -373,10 +375,24 @@ namespace ffmpegcpp
         switch (m_pAVCodec->type)
         {
             case AVMEDIA_TYPE_VIDEO:
+            if (pVideoInputStream)
+            {
+                pVideoInputStream->Init(m_containerContext, stream);
+                m_inputStreams[streamIndex] = pVideoInputStream;
+            }
+            else
+                m_inputStreams[streamIndex] = new VideoInputStream(m_containerContext, stream);
             m_inputStreams[streamIndex] = new VideoInputStream(m_containerContext, stream);
             break;
 
             case AVMEDIA_TYPE_AUDIO:
+                            if (pAudioInputStream)
+                                {
+                                    pAudioInputStream->Init(m_containerContext, stream);
+                                    m_inputStreams[streamIndex] = pAudioInputStream;
+                                }
+                            else
+                                    m_inputStreams[streamIndex] = new AudioInputStream(m_containerContext, stream);
             m_inputStreams[streamIndex] = new AudioInputStream(m_containerContext, stream);
             break;
 
@@ -396,7 +412,7 @@ namespace ffmpegcpp
             AVStream* stream = m_containerContext->streams[i];
 
             if (stream->id == streamId)
-                return GetInputStream(i);
+                return GetInputStream(i, false);
         }
 
         // no match found
@@ -516,7 +532,7 @@ namespace ffmpegcpp
         // go over all streams and get their info
         for (unsigned int i = 0; i < m_containerContext->nb_streams; ++i)
         {
-            InputStream* stream = GetInputStream(i);
+            InputStream* stream = GetInputStream(i, false);
 
             if (stream == nullptr) continue; // no valid stream
                 stream->AddStreamInfo(&info);
@@ -530,7 +546,7 @@ namespace ffmpegcpp
         // Make sure all streams exist, so we can query them later.
         for (unsigned int i = 0; i < m_containerContext->nb_streams; ++i)
         {
-            GetInputStream(i);
+            GetInputStream(i, false);
         }
         // Process the entire container so we can know how many frames are in each
         if(hasMaxFrameCount()) {
@@ -547,7 +563,7 @@ namespace ffmpegcpp
         return GetInputStreamById(streamId)->GetFramesProcessed();
     }
 
-    const char* Demuxer::GetFileName()
+    string Demuxer::GetFileName()
     {
         return m_fileName;
     }
