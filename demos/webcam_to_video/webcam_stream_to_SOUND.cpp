@@ -13,8 +13,7 @@
 #include <ffmpegcpp.h>
 
 using namespace ffmpegcpp;
-using std::string;
-using std::cerr;
+using namespace std;
 
 void record_VP9()
 {
@@ -22,9 +21,9 @@ void record_VP9()
     Muxer* muxer = new Muxer("../videos/output_VP9.mkv");
 
     // These are example video and audio sources used below.
-    // const char* videoDevice = "/dev/video0";
+    //const char* videoDevice = VIDEO_DEVICE;
     //const char* audioDevice = "hw:1,0";  // first webcam
-    const char* audioDevice = "pulse";  // first webcam
+    const char audioDevice[] = "pulse";  // first webcam
     //const char* audioDevice = "default"; // the current selected source
 
     const char * audioDeviceFormat = "alsa";
@@ -53,9 +52,9 @@ void record_VP9()
             // of course, this will replaced by the start / stop button
             // waiting, it helps a lot to see the difficulties ffmpegs has to solve with timings
             auto current_time = std::chrono::steady_clock::now();
-            std::chrono::duration<double> elapsed_seconds = current_time - start;
+            chrono::duration<double> elapsed_seconds = current_time - start;
 
-            std::cout << "elapsed time  :   "<< elapsed_seconds.count() << '\n';
+            cout << "elapsed time  :   "<< elapsed_seconds.count() << '\n';
 
             audioFile->Step();
 
@@ -71,7 +70,7 @@ void record_VP9()
 
         delete muxer;
     }
-    catch (FFmpegException e)
+    catch (const FFmpegException & e)
     {
         cerr << e.what() << "\n";
         throw e;
@@ -82,7 +81,7 @@ int main(void)
 {
     avdevice_register_all();
     record_VP9();
-    std::cout << "Sound encoding complete!" << "\n";
+    cout << "Sound encoding complete!" << "\n";
 
     return 0;
 }

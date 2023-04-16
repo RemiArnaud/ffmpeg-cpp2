@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ffmpeg.h"
+extern "C" {
+#include <libavutil/fifo.h>
+}
 #include "Demuxing/StreamData.h"
 
 namespace ffmpegcpp

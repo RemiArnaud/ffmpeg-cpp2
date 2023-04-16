@@ -9,17 +9,18 @@
 
 #include <iostream>
 #include <ffmpegcpp.h>
+#include "video_device.h"
 
 using namespace ffmpegcpp;
-using std::string;
-using std::cerr;
+using namespace std;
 
-void PlayDemo(int argc, char** argv)
+void PlayDemo(int argc, char* argv[])
 {
+    (void)argc; (void)argv;
     avdevice_register_all();
 
     // These are example video and audio sources used below.
-    const char* videoDevice = "/dev/video0";
+    const char videoDevice[] = VIDEO_DEVICE;
 
     Muxer* muxer = new Muxer("../videos/output_MPEG2.mpg");
 
@@ -45,21 +46,29 @@ void PlayDemo(int argc, char** argv)
         VideoEncoder * videoEncoder = new VideoEncoder(jcodec, muxer, frameRate, outputPixFormat);
 
         Demuxer * demuxer = new Demuxer(videoDevice, width, height, fps);
+        demuxer->setMaxFrameCount(30*5);
         demuxer->DecodeBestVideoStream(videoEncoder);
         demuxer->PreparePipeline();
 
-        int frameNumber = 0;
-
-        while (!demuxer->IsDone() && (frameNumber < 100))
+        int frameCount = 0;
+#if false
+        int oldFrameCount = -30;
+#endif
+        while (!demuxer->IsDone() && (frameCount < 5*30))
         {
-            frameNumber = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
-            std::cerr << "frame number : " << frameNumber << "\n";
-
-            if (frameNumber > 100)
-                demuxer->Stop();
-
+            frameCount = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
+            //frameNumber += fn;
+#if false
+            if((frameCount - oldFrameCount) > 29) {
+                std::cout << "frame count : " << frameCount << "\n";
+                oldFrameCount = frameCount;
+            }
+#else
+            std::cout << "frame count : " << frameCount << "\n";
+#endif
             demuxer->Step();
         }
+        demuxer->Stop();
 
         // close the muxer and save the file to disk
         muxer->Close();
@@ -73,7 +82,7 @@ void PlayDemo(int argc, char** argv)
 
         delete muxer;
     }
-    catch (FFmpegException e)
+    catch (const FFmpegException & e)
     {
         cerr << e.what() << "\n";
         throw e;

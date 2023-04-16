@@ -37,7 +37,7 @@ void GeneratedAudioSource::Step()
 {
 	/* encode a single tone sound */
 	float t = 0.0f;
-	float tincr = 2.0f * M_PI * 440.0f / sampleRate;
+	float tincr = 2 * M_PI * 440.0 / sampleRate;
 	for (int i = 0; i < 120; i++)
 	{
 		/* make sure the frame is writable -- makes a copy if the encoder

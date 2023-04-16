@@ -3,25 +3,24 @@
 
 namespace ffmpegcpp
 {
-	VideoFormatConverter::VideoFormatConverter(AVCodecContext* codecContext)
+    VideoFormatConverter::VideoFormatConverter(AVCodecContext * codecContextIn)
 	{
-		this->codecContext = codecContext;
-
-		converted_frame = av_frame_alloc();
-		int ret;
-		if (!converted_frame)
+        m_codecContext = codecContextIn;
+        m_converted_frame = av_frame_alloc();
+        int ret;
+        if (!m_converted_frame)
 		{
 			CleanUp();
 			throw FFmpegException("Error allocating a video frame");
 		}
 
 		// configure the frame and get the buffer
-		converted_frame->format = codecContext->pix_fmt;
-		converted_frame->width = codecContext->width;
-		converted_frame->height = codecContext->height;
+        m_converted_frame->format = codecContextIn->pix_fmt;
+        m_converted_frame->width = codecContextIn->width;
+        m_converted_frame->height = codecContextIn->height;
 
-		/* allocate the buffers for the frame data */
-		ret = av_frame_get_buffer(converted_frame, 32);
+        /* allocate the buffers for the frame data */
+        ret = av_frame_get_buffer(m_converted_frame, 32);
 		if (ret < 0)
 		{
 			CleanUp();
@@ -35,45 +34,45 @@ namespace ffmpegcpp
 	}
 
 	void VideoFormatConverter::CleanUp()
-	{
-		if (converted_frame != nullptr)
-		{
-			av_frame_free(&converted_frame);
-			converted_frame = nullptr;
-		}
-		if (swsContext != nullptr)
-		{
-			sws_freeContext(swsContext);
-			swsContext = nullptr;
+    {
+        if (m_converted_frame != nullptr)
+        {
+            av_frame_free(&m_converted_frame);
+            m_converted_frame = nullptr;
+        }
+        if (m_swsContext != nullptr)
+        {
+            sws_freeContext(m_swsContext);
+            m_swsContext = nullptr;
 		}
 	}
 
-	void VideoFormatConverter::InitDelayed(AVFrame* frame)
+    void VideoFormatConverter::InitDelayed(AVFrame * frame)
 	{
-		// configure the conversion context based in the source and target data
-		swsContext = sws_getCachedContext(swsContext,
-			frame->width, frame->height, (AVPixelFormat)frame->format,
-			converted_frame->width, converted_frame->height, (AVPixelFormat)converted_frame->format,
-			0, 0, 0, 0);
-
+        // configure the conversion context based in the source and target data
+        m_swsContext = sws_getCachedContext(m_swsContext
+            , frame->width, frame->height, (AVPixelFormat)frame->format
+            , m_converted_frame->width, m_converted_frame->height
+            , (AVPixelFormat)m_converted_frame->format
+            , 0, 0, 0, 0);
 	}
 
-	AVFrame* VideoFormatConverter::ConvertFrame(AVFrame* frame)
+    AVFrame * VideoFormatConverter::ConvertFrame(AVFrame * frame)
 	{
-		// initialize the resampler
-		if (!initialized)
+        // initialize the resampler
+        if (!m_initialized)
 		{
-			InitDelayed(frame);
-			initialized = true;
+            InitDelayed(frame);
+            m_initialized = true;
 		}
 
 		// convert the frame
-		sws_scale(swsContext, frame->data, frame->linesize, 0,
-			frame->height, converted_frame->data, converted_frame->linesize);
+        sws_scale(m_swsContext, frame->data, frame->linesize, 0,
+                  frame->height, m_converted_frame->data, m_converted_frame->linesize);
 
-		av_frame_copy_props(converted_frame, frame); // remember all the other data
+        av_frame_copy_props(m_converted_frame, frame); // remember all the other data
 
-		return converted_frame;
+        return m_converted_frame;
 	}
 }
 

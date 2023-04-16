@@ -1,5 +1,5 @@
 
-#include "simple_interface/SimpleInterface.h"
+#include "SimpleInterface.h"
 
 int main()
 {

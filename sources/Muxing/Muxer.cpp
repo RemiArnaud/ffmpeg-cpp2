@@ -10,31 +10,31 @@ using namespace std;
 namespace ffmpegcpp
 {
 
-	Muxer::Muxer(const char* fileName)
+	Muxer::Muxer(const std::string & fileName)
 	{
-		this->fileName = fileName;
+        m_fileName = fileName;
 #ifdef DBBUG
                 std::cerr  <<  "Currently in : "  << __func__ << "   creating new muxer " <<  "\n";
 #endif
-		/* allocate the output media context */
-		avformat_alloc_output_context2(&containerContext, NULL, NULL, fileName);
+        /* allocate the output media context */
+                avformat_alloc_output_context2(&m_containerContext, NULL, NULL, fileName.c_str());
 #ifdef DBBUG
                 std::cerr  <<  "avformat_alloc_output_context2 done "  <<  "\n";
                 std::cerr  <<  "containerContext =  "  << containerContext << "\n";
 #endif
-		if (!containerContext)
+                if (!m_containerContext)
 		{
-			printf("WARNING: Could not deduce output format from file extension: using MP4. as default\n");
-			avformat_alloc_output_context2(&containerContext, NULL, "mp4", fileName);
+            printf("WARNING: Could not deduce output format from file extension: using MP4. as default\n");
+                    avformat_alloc_output_context2(&m_containerContext, NULL, "mp4", fileName.c_str());
 		}
 
-		if (!containerContext)
+                if (!m_containerContext)
 		{
-			throw FFmpegException(std::string("Could not allocate container context for " + this->fileName).c_str());
+            throw FFmpegException(std::string("Could not allocate container context for " + this->m_fileName).c_str());
 		}
 
-		// the format of the container - not necessarily the same as the fileName suggests, see above
-		containerFormat = containerContext->oformat;
+        // the format of the container - not necessarily the same as the fileName suggests, see above
+        m_containerFormat = m_containerContext->oformat;
 	}
 
 	Muxer::~Muxer()
@@ -47,80 +47,80 @@ namespace ffmpegcpp
 		// see if we were primed - we will use this info below
 		bool wasPrimed = IsPrimed();
 
-		// clean up all the output streams that were added to this muxer.
-               for (unsigned int i = 0; i < outputStreams.size(); ++i)
+        // clean up all the output streams that were added to this muxer.
+        for (unsigned int i = 0; i < m_outputStreams.size(); ++i)
                {
-                   outputStreams[i] = nullptr;
+            m_outputStreams[i] = nullptr;
                }
-		outputStreams.clear();
+        m_outputStreams.clear();
 
-		// clean up the container context - this will also finalize the content of the container!
-		if (containerContext != nullptr && wasPrimed)
+        // clean up the container context - this will also finalize the content of the container!
+        if (m_containerContext != nullptr && wasPrimed)
 		{
-			// If we don't ALWAYS do this, we leak memory!
-			av_write_trailer(containerContext);
+            // If we don't ALWAYS do this, we leak memory!
+            av_write_trailer(m_containerContext);
 
-			if (!(containerFormat->flags & AVFMT_NOFILE))
-				/* Close the output file. */
-				avio_closep(&containerContext->pb);
+            if (!(m_containerFormat->flags & AVFMT_NOFILE))
+                /* Close the output file. */
+                avio_closep(&m_containerContext->pb);
 
 
-			avformat_free_context(containerContext);
-			containerContext = nullptr;
+            avformat_free_context(m_containerContext);
+            m_containerContext = nullptr;
 		}
 
-		// clean up the queue
-		for (unsigned int i = 0; i < packetQueue.size(); ++i)
-		{
-			AVPacket* tmp_pkt = packetQueue[i];
+        // clean up the queue
+        for (unsigned int i = 0; i < m_packetQueue.size(); ++i)
+        {
+            AVPacket* tmp_pkt = m_packetQueue[i];
 			av_packet_free(&tmp_pkt);
-		}
-		packetQueue.clear();
+        }
+        m_packetQueue.clear();
 	}
 
-	AVCodec* Muxer::GetDefaultVideoFormat()
-	{
-		return CodecDeducer::DeduceEncoder(containerFormat->video_codec);
+    const AVCodec* Muxer::GetDefaultVideoFormat()
+    {
+        return CodecDeducer::DeduceEncoder(m_containerFormat->video_codec);
 	}
 
-	AVCodec* Muxer::GetDefaultAudioFormat()
-	{
-		return CodecDeducer::DeduceEncoder(containerFormat->audio_codec);
+    const AVCodec* Muxer::GetDefaultAudioFormat()
+    {
+        return CodecDeducer::DeduceEncoder(m_containerFormat->audio_codec);
 	}
 
 	void Muxer::AddOutputStream(OutputStream* outputStream)
-	{
-		if (opened) throw FFmpegException(std::string("You cannot open a new stream after something was written to the muxer").c_str());
+    {
+        if (m_opened) throw FFmpegException(std::string("You cannot open a new stream after something was written to the muxer").c_str());
 
-		// create an internal stream and pass it on
-		AVStream* stream = avformat_new_stream(containerContext, NULL);
+        // create an internal stream and pass it on
+        AVStream* stream = avformat_new_stream(m_containerContext, NULL);
 		if (!stream)
-		{
-			throw FFmpegException(std::string("Could not allocate stream for container " + string(containerContext->oformat->name)).c_str());
+        {
+            throw FFmpegException(std::string("Could not allocate stream for container " + std::string(m_containerContext->oformat->name)).c_str());
 		}
 
-		stream->id = containerContext->nb_streams - 1;
+        stream->id = m_containerContext->nb_streams - 1;
 
-		outputStream->OpenStream(stream, containerContext->oformat->flags);
+        outputStream->OpenStream(stream, m_containerContext->oformat->flags);
 
-		outputStreams.push_back(outputStream);
+        m_outputStreams.push_back(outputStream);
 	}
 
 	bool Muxer::IsPrimed()
-	{
-		if (opened) return true; // we were already opened before - always primed from now on!
-		bool allPrimed = true;
-		for (unsigned int i = 0; i < outputStreams.size(); ++i)
-		{
-			if (!outputStreams[i]->IsPrimed()) allPrimed = false;
+    {
+        if (m_opened) return true; // we were already opened before - always primed from now on!
+        bool allPrimed = true;
+        for (unsigned int i = 0; i < m_outputStreams.size(); ++i)
+        {
+            if (!m_outputStreams[i]->IsPrimed()) allPrimed = false;
 		}
 
 		// we are finally primed - open ourselves before we continue.
 		if (allPrimed)
 		{
 			// if we are all primed
-			Open();
-			opened = true;
+            Open();
+            m_opened = true;
 			//printf("After %d cached packets, we can finally open the container\n", packetQueue.size());
 		}
 		return allPrimed;
@@ -132,14 +132,14 @@ namespace ffmpegcpp
 		// at that moment, we can actually open ourselves!
 		// Because of this, we need to call PreparePipeline on all input sources BEFORE
 		// we start running the actual data through. This pipeline preparation step
-		// pushes one frame down the pipeline so that the output can be configured properly.
-		if (!opened)
+        // pushes one frame down the pipeline so that the output can be configured properly.
+        if (!m_opened)
 		{
 			throw FFmpegException(std::string("You cannot submit a packet to the muxer until all output streams are fully primed!").c_str());
 		}
 
-		// submit this packet
-		int ret = av_interleaved_write_frame(containerContext, pkt);
+        // submit this packet
+        int ret = av_interleaved_write_frame(m_containerContext, pkt);
 		if (ret < 0)
 		{
 			throw FFmpegException(std::string("Error while writing frame to output container").c_str(), ret);
@@ -147,22 +147,22 @@ namespace ffmpegcpp
 
 		return;
 
-		if (!opened)
+        if (!m_opened)
 		{
 			// we CAN open now - all streams are primed and ready to go!
 			if (IsPrimed())
 			{
-				Open();
-				opened = true;
-				printf("After %zu cached packets, we can finally open the container\n", packetQueue.size());
+                Open();
+                m_opened = true;
+                printf("After %lu cached packets, we can finally open the container\n", m_packetQueue.size());
 
-				// flush the queue
-				for (unsigned int i = 0; i < packetQueue.size(); ++i)
-				{
-					AVPacket* tmp_pkt = packetQueue[i];
+                // flush the queue
+                for (unsigned int i = 0; i < m_packetQueue.size(); ++i)
+                {
+                    AVPacket* tmp_pkt = m_packetQueue[i];
 
 					// Write the compressed frame to the media file.
-					int ret = av_interleaved_write_frame(containerContext, tmp_pkt);
+                    ret = av_interleaved_write_frame(m_containerContext, tmp_pkt);
 					if (ret < 0)
 					{
 						throw FFmpegException(std::string("Error while writing frame to output container").c_str(), ret);
@@ -170,8 +170,8 @@ namespace ffmpegcpp
 
 					av_packet_unref(tmp_pkt);
 					av_packet_free(&tmp_pkt);
-				}
-				packetQueue.clear();
+                }
+                m_packetQueue.clear();
 			}
 
 			// not ready - buffer the packet
@@ -182,40 +182,39 @@ namespace ffmpegcpp
 				{
 					throw FFmpegException(std::string("Failed to allocate packet").c_str());
 				}
-				av_packet_ref(tmp_pkt, pkt);
-				packetQueue.push_back(tmp_pkt);
+                av_packet_ref(tmp_pkt, pkt);
+                m_packetQueue.push_back(tmp_pkt);
 			}
 		}
 
-		// we are opened now - write this packet!
-		if (opened)
+        // we are opened now - write this packet!
+        if (m_opened)
 		{
-			int ret = av_interleaved_write_frame(containerContext, pkt);
+            ret = av_interleaved_write_frame(m_containerContext, pkt);
 			if (ret < 0)
 			{
 				throw FFmpegException(std::string("Error while writing frame to output container").c_str(), ret);
 			}
 		}
-
 	}
 
 	void Muxer::Open()
 	{
-		// open the output file, if needed
-		if (!(containerFormat->flags & AVFMT_NOFILE))
+        // open the output file, if needed
+        if (!(m_containerFormat->flags & AVFMT_NOFILE))
 		{
-			int ret = avio_open(&containerContext->pb, fileName.c_str(), AVIO_FLAG_WRITE);
+            int ret = avio_open(&m_containerContext->pb, m_fileName.c_str(), AVIO_FLAG_WRITE);
 			if (ret < 0)
 			{
-				throw FFmpegException(std::string("Could not open file for container " + fileName).c_str(), ret);
+                throw FFmpegException(std::string("Could not open file for container " + m_fileName).c_str(), ret);
 			}
 		}
 
-		// Write the stream header, if any.
-		int ret = avformat_write_header(containerContext, NULL);
+        // Write the stream header, if any.
+        int ret = avformat_write_header(m_containerContext, NULL);
 		if (ret < 0)
 		{
-			throw FFmpegException(std::string("Error when writing header to output file " + fileName).c_str(), ret);
+            throw FFmpegException(std::string("Error when writing header to output file " + m_fileName).c_str(), ret);
 		}
 	}
 
@@ -230,10 +229,10 @@ namespace ffmpegcpp
 		// Make sure we drain all the output streams before we write the first packet.
 		// We must be sure to do this because in an extreme case, one entire stream
 		// might be queueing all its packets before we are opened, so it might not
-		// be draining them at all.
-		for (unsigned int i = 0; i < outputStreams.size(); ++i)
-		{
-			outputStreams[i]->DrainPacketQueue();
+        // be draining them at all.
+        for (unsigned int i = 0; i < m_outputStreams.size(); ++i)
+        {
+            m_outputStreams[i]->DrainPacketQueue();
 		}
 
 		// free the stream

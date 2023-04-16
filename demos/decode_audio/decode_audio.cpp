@@ -10,7 +10,7 @@ class RawAudioFileSink : public AudioFrameSink, public FrameWriter
 {
 public:
 
-	RawAudioFileSink(const char* fileName)
+	RawAudioFileSink(const char * fileName)
 	{
 		file = fopen(fileName, "wb");
 	}
@@ -82,7 +82,7 @@ int main()
 		delete demuxer;
 		delete fileSink;
 	}
-	catch (FFmpegException e)
+	catch (FFmpegException const & e)
 	{
 
 		cerr << "Exception caught!" << endl;

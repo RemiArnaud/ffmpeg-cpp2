@@ -13,37 +13,35 @@
 namespace ffmpegcpp
 {
 
-    // CTor
-    H264Codec::H264Codec()
+	// CTor
+	H264Codec::H264Codec()
 // no idea for Windows case, but certainly something exists already
-	: VideoCodec(AV_CODEC_ID_H264)
-    {
-    }
+  : VideoCodec(AV_CODEC_ID_H264)
+	{
+	}
 
-    void H264Codec::SetProfile(const char * profile)
-    {
-        SetOption("profile", profile);
-    }
+	void H264Codec::SetProfile(const char * profile)
+	{
+			SetOption("profile", profile);
+	}
 
-    void H264Codec::SetTune(const char * tune)
-    {
-        SetOption("tune", tune);
-    }
+	void H264Codec::SetTune(const char * tune)
+	{
+			SetOption("tune", tune);
+	}
 
-    void H264Codec::SetPreset(const char * preset)
-    {
-        SetOption("preset", preset);
-    }
+	void H264Codec::SetPreset(const char * preset)
+	{
+			SetOption("preset", preset);
+	}
 
-    void H264Codec::SetCrf(int crf)
-    {
-        SetOption("crf", crf);
-    }
+	void H264Codec::SetCrf(int crf)
+	{
+			SetOption("crf", crf);
+	}
 
-    void H264Codec::SetMovFlags(const char * movflags)
-    {
-        SetOption("movflags", movflags);
-    }
-
+	void H264Codec::SetMovFlags(const char * movflags)
+	{
+			SetOption("movflags", movflags);
+	}
 }
-

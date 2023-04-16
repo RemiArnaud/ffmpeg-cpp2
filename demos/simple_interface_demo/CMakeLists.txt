@@ -1,0 +1,5 @@
+set(prg example)
+link_libraries(${PROJECT_NAME})
+include_directories(../../sources ../simple_interface)
+add_executable(${prg} ${prg}.cpp ../simple_interface/SimpleInterface.cpp ../simple_interface/dllmain.cpp)
+add_dependencies(${prg} ${PROJECT_NAME})

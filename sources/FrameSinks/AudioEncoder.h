@@ -41,7 +41,7 @@ namespace ffmpegcpp
 		AudioCodec* closedCodec;
 
 		AudioFormatConverter *formatConverter = nullptr;
-		OpenCodec* codec = nullptr;
+        OpenCodec* m_codec = nullptr;
 		AVPacket* pkt = nullptr;
 
 		OneInputFrameSink* oneInputFrameSink = nullptr;

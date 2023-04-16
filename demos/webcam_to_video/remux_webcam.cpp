@@ -12,19 +12,19 @@
 #include <thread>         // std::thread
 #include <fstream>        // std::remove
 
+#include "video_device.h"
+
 static bool bRecording = false;
 
 using namespace ffmpegcpp;
-using std::string;
-using std::cerr;
+using namespace std;
 
 //#ifdef ALSA_BUFFER_SIZE_MAX
 #undef ALSA_BUFFER_SIZE_MAX
 #define ALSA_BUFFER_SIZE_MAX  524288
 
-const char * audio_file = "../videos/audio.mp4";  // aac (s32le ?)
-const char * video_file = "../videos/video_H264.mp4";  // h264
-
+const char audio_file[] = "../videos/audio.mp4";  // aac (s32le ?)
+const char video_file[] = "../videos/video_H264.mp4";  // h264
 
 void record_Audio()
 {
@@ -63,17 +63,17 @@ void record_Audio()
     delete Amuxer;
 }
 
+#define FPS 30
 
 void record_Video()
 {
     int width  = 1280; // 1920;
     int height = 720;  // 1080;
-    int fps = 24;  // Logitech prefered fps value
-
-    AVRational frameRate = { 24, 1 };
+    int fps = FPS;
+    AVRational frameRate = { FPS, 1 };
 
     // These are example video and audio sources used below.
-    const char * videoDevice = "/dev/video0";
+    const char * videoDevice = VIDEO_DEVICE;
     AVPixelFormat outputPixFormat= AV_PIX_FMT_NV12;
 
     Muxer* Vmuxer = new Muxer(video_file);
@@ -107,7 +107,7 @@ void record_Video()
 
 void create_final_Video()
 {
-    const char * final_file = "../videos/final_video.mp4";  // h264 + aac (or vp9 + aac)
+    const char final_file[] = "../videos/final_video.mp4";  // h264 + aac (or vp9 + aac)
 
     Muxer* AVmuxer = new Muxer(final_file);
 
@@ -149,7 +149,7 @@ void create_final_Video()
         // Save everything to disk by closing the muxer.
         AVmuxer->Close();
     }
-    catch (FFmpegException e)
+    catch (const FFmpegException & e)
     {
         cerr << e.what() << "\n";
         throw e;
@@ -165,18 +165,19 @@ int main(void)
     //avformat_network_init(); // future use
     bRecording = true;
 
-    std::thread first (record_Audio);
-    std::thread second (record_Video);
+    thread first (record_Audio);
+    thread second (record_Video);
 
-    auto start = std::chrono::steady_clock::now();
-    auto current_time = std::chrono::steady_clock::now();
-         std::chrono::duration<double> elapsed_seconds = current_time - start;
+    auto start = chrono::steady_clock::now();
+    auto current_time = chrono::steady_clock::now();
+         chrono::duration<double> elapsed_seconds = current_time - start;
+
     do
     {
         current_time = std::chrono::steady_clock::now();
         elapsed_seconds = current_time - start;
 
-    } while ((elapsed_seconds.count()) < (60));
+    } while ((elapsed_seconds.count()) < (20));
 
     bRecording = false;
 
@@ -185,21 +186,22 @@ int main(void)
 
     create_final_Video();
 
-    std::cout << "Encoding complete!" << "\n";
+    cout << "Encoding complete!" << "\n";
 
 #define TEST
 #ifdef TEST
-    std::remove(audio_file);
-    std::remove(video_file);
+    remove(audio_file);
+    remove(video_file);
 
-     bool failed = (std::ifstream(audio_file) || std::ifstream(video_file));
+    bool failed = (ifstream(audio_file) || ifstream(video_file));
 
     if(failed)
     {
-        std::perror("Error opening deleted file");
+        perror("Error opening deleted file");
         return 1;
     }
 #endif
 
     return 0;
 }
+

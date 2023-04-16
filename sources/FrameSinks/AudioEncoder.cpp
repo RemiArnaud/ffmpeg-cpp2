@@ -34,7 +34,7 @@ namespace ffmpegcpp
 		int sampleRate = closedCodec->GetDefaultSampleRate();
 		AVSampleFormat format = closedCodec->GetDefaultSampleFormat();
 
-		codec = closedCodec->Open(bitRate, format, sampleRate);
+        m_codec = closedCodec->Open(bitRate, format, sampleRate);
 
 		pkt = av_packet_alloc();
 		if (!pkt)
@@ -45,9 +45,9 @@ namespace ffmpegcpp
 
 		try
 		{
-			formatConverter = new AudioFormatConverter(this, codec->GetContext());
+            formatConverter = new AudioFormatConverter(this, m_codec->GetContext());
 		}
-		catch (FFmpegException e)
+		catch (FFmpegException const & e)
 		{
 			CleanUp();
 			throw e;
@@ -70,10 +70,10 @@ namespace ffmpegcpp
 			delete formatConverter;
 			formatConverter = nullptr;
 		}
-		if (codec != nullptr)
+        if (m_codec != nullptr)
 		{
-			delete codec;
-			codec = nullptr;
+            delete m_codec;
+            m_codec = nullptr;
 		}
 		if (oneInputFrameSink != nullptr)
 		{
@@ -90,7 +90,7 @@ namespace ffmpegcpp
 	void AudioEncoder::WriteFrame(int /* streamIndex */, AVFrame* frame, StreamData* metaData)
 	{
 		// if we haven't opened the codec yet, we do it now!
-		if (codec == nullptr)
+        if (m_codec == nullptr)
 		{
 			OpenLazily(frame, metaData);
 		}
@@ -111,7 +111,7 @@ namespace ffmpegcpp
 
 	void AudioEncoder::WriteConvertedFrame(AVFrame* frame)
 	{
-		int ret = avcodec_send_frame(codec->GetContext(), frame);
+        int ret = avcodec_send_frame(m_codec->GetContext(), frame);
 		if (ret < 0)
 		{
 			throw FFmpegException("Error sending a frame for encoding", ret);
@@ -121,7 +121,7 @@ namespace ffmpegcpp
 
 	void AudioEncoder::Close(int /* streamIndex */)
 	{
-		if (codec == nullptr) return; // can't close if we were never opened
+        if (m_codec == nullptr) return; // can't close if we were never opened
 
 		// First flush the converter and the FIFO queue in it
 		formatConverter->ProcessFrame(NULL);
@@ -135,7 +135,7 @@ namespace ffmpegcpp
 		int ret = 0;
 		while (ret >= 0)
 		{
-			ret = avcodec_receive_packet(codec->GetContext(), pkt);
+            ret = avcodec_receive_packet(m_codec->GetContext(), pkt);
 			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 			{
 				return;
@@ -147,7 +147,7 @@ namespace ffmpegcpp
 
 			//printf("Write packet %3 (size=%5d)\n", data->pkt->pts, data->pkt->size);
 			//fwrite(data->pkt->data, 1, data->pkt->size, data->f);
-			output->WritePacket(pkt, codec);
+            output->WritePacket(pkt, m_codec);
 
 			av_packet_unref(pkt);
 		}

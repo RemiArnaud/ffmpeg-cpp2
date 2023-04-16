@@ -9,16 +9,14 @@
 namespace ffmpegcpp
 {
 	struct ContainerInfo
-	{
-		int64_t durationInMicroSeconds;
+    {
+        int64_t durationInMicroSeconds;
 		float durationInSeconds;
 		float start;
-		double bitRate;
-		const AVInputFormat* format;
+        double bitRate;
+        const AVInputFormat * format;
 
 		std::vector<VideoStreamInfo> videoStreams;
 		std::vector<AudioStreamInfo> audioStreams;
 	};
-
-
 }

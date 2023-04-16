@@ -5,7 +5,6 @@
 #include "GeneratedAudioSource.h"
 
 #include <ffmpegcpp.h>
-#include <conio.h>
 
 using namespace ffmpegcpp;
 using namespace std;
@@ -20,17 +19,17 @@ void PlayDemo(int argc, char** argv)
 {
 
 	// These are example video and audio sources used below.
-	const char* rawVideoFile = "../../samples/carphone_qcif.y4m";
+	const char * rawVideoFile = "../../samples/carphone_qcif.y4m";
         // FIXME : unused
 	//int rawVideoWidth = 176; int rawVideoHeight = 162;
-	const char* rawAudioFile = "../../samples/Vivaldi_s16le_2_channels_samplerate_11025.dat";
-	const char* rawAudioFormat = "s16le"; int rawAudioSampleRate = 11025; int rawAudioChannels = 2;
+	const char * rawAudioFile = "../../samples/Vivaldi_s16le_2_channels_samplerate_11025.dat";
+	const char * rawAudioFormat = "s16le"; int rawAudioSampleRate = 11025; int rawAudioChannels = 2;
 
-	const char* encodedVideoFile = "../../samples/carphone.h264";
-	const char* encodedAudioFile = "../../samples/Vivaldi_Sonata_eminor_.mp3";
+	const char * encodedVideoFile = "../../samples/carphone.h264";
+	const char * encodedAudioFile = "../../samples/Vivaldi_Sonata_eminor_.mp3";
 
-	const char* containerWithVideoAndAudioFile = "../../samples/big_buck_bunny.mp4";
-	const char* containerWithAudioFile = "../../samples/DesiJourney.wav";
+	const char * containerWithVideoAndAudioFile = "../../samples/big_buck_bunny.mp4";
+	const char * containerWithAudioFile = "../../samples/DesiJourney.wav";
 
 	// hard-code the settings here, but let them be overridden by the arguments
 	string inputAudioSource = "CONTAINER"; // options are RAW, ENCODED, CONTAINER, GENERATED
@@ -71,7 +70,7 @@ void PlayDemo(int argc, char** argv)
 		*/
 
 		// create the output muxer - we'll be adding encoders to it later
-		Muxer* muxer = new Muxer(outputContainerName.c_str());
+        Muxer* muxer = new Muxer(outputContainerName);
 
 		/**
 			* CONFIGURE AUDIO OUTPUT
@@ -245,6 +244,16 @@ void PlayDemo(int argc, char** argv)
 		// to start reading frames from the input, decoding them, optionally filtering them,
 		// encoding them and writing them to the final container.
 		// This can be interweaved if you want to.
+
+		if ((audioInputSource != nullptr) &&  (videoInputSource != nullptr))
+		{
+		    while ((!audioInputSource->IsDone()) && (!videoInputSource->IsDone()))
+                    {
+			videoInputSource->Step();
+			audioInputSource->Step();
+                    }
+		}
+/*
 		if (audioInputSource != nullptr)
 		{
 			while (!audioInputSource->IsDone()) audioInputSource->Step();
@@ -253,7 +262,7 @@ void PlayDemo(int argc, char** argv)
 		{
 			while (!videoInputSource->IsDone()) videoInputSource->Step();
 		}
-
+*/
 		// close the muxer and save the file to disk
 		muxer->Close();
 
@@ -283,7 +292,7 @@ void PlayDemo(int argc, char** argv)
 
 		delete muxer;
 	}
-	catch (FFmpegException e)
+	catch (const FFmpegException & e)
 	{
 		cerr << e.what() << endl;
 		throw e;
@@ -295,6 +304,6 @@ int main(int argc, char **argv)
 	PlayDemo(argc, argv);
 
 	cout << "Encoding complete!" << endl;
-	_getch();
+
 	return 0;
 }

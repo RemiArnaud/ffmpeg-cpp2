@@ -8,5 +8,5 @@
 #
 g++ -I../../sources  -Wall -std=c++11  \
           -o decode_video decode_video.cpp \
-          -L../../build/ -lffmpeg-cpp \
+          -L../../build/ -lffmpeg-cpp2 \
           `pkg-config --cflags --libs libavutil libavcodec libswscale libavformat`

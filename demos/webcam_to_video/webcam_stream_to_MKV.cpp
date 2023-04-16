@@ -9,6 +9,7 @@
 #include <iostream>
 #include <chrono>
 #include <ffmpegcpp.h>
+#include "video_device.h"
 
 using namespace ffmpegcpp;
 using std::string;
@@ -27,9 +28,9 @@ void record_MKV()
     Muxer* muxer = new Muxer("../videos/output_H264.mkv");  // good result
 
     // These are example video and audio sources used below.
-    const char* videoDevice = "/dev/video0";
-    const char* audioDevice = "hw:1,0"; // first webcam   1 is DEV alsa parameter, 0 is 
-    //const char* audioDevice = "default";
+    const char* videoDevice = VIDEO_DEVICE;
+    //const char* audioDevice = "hw:1,0"; // first webcam   1 is DEV alsa parameter, 0 is 
+    const char* audioDevice = "default";
     //const char* audioDevice = "pulse";
 
     const char * audioDeviceFormat = "alsa";
@@ -94,7 +95,7 @@ void record_MKV()
 
         auto start = std::chrono::steady_clock::now();
 
-        while (!demuxer->IsDone() || !audioFile->IsDone())
+        while (!demuxer->IsDone() && !audioFile->IsDone())
         {
 
             auto current_time = std::chrono::steady_clock::now();
@@ -104,7 +105,7 @@ void record_MKV()
             demuxer->Step();
             audioFile->Step();
 
-            if ((elapsed_seconds.count()) > (20)) // 20 s
+            if ((elapsed_seconds.count()) > (10)) // 10 s
             {
                 demuxer->Stop();
                 audioFile->Stop();
@@ -125,7 +126,7 @@ void record_MKV()
 
         delete muxer;
     }
-    catch (FFmpegException e)
+    catch (FFmpegException const & e)
     {
         cerr << e.what() << "\n";
         throw e;

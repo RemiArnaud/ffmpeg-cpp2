@@ -117,7 +117,7 @@ namespace ffmpegcpp
 		{
 			formatConverter = new VideoFormatConverter(codec->GetContext());
 		}
-		catch (FFmpegException e)
+        catch (const FFmpegException & e)
 		{
 			CleanUp();
 			throw e;

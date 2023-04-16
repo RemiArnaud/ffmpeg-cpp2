@@ -120,7 +120,7 @@ int main()
         delete fileSink;
     }
 
-    catch (FFmpegException e)
+    catch (const FFmpegException & e)
     {
         cerr << "Exception caught!" << "\n";
         cerr << e.what() << "\n";

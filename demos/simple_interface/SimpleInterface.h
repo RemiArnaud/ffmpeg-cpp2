@@ -7,17 +7,17 @@
 #define DllExport __declspec(dllexport)
 #endif
 
-extern "C" DllExport void* ffmpegCppCreate(const char* outputFileName);
+extern DllExport void * ffmpegCppCreate(const char * outputFileName);
 
-extern "C" DllExport void ffmpegCppAddVideoStream(void* handle, const char* videoFileName);
-extern "C" DllExport void ffmpegCppAddAudioStream(void* handle, const char* audioFileName);
+extern DllExport void ffmpegCppAddVideoStream(void * handle, const char * videoFileName);
+extern DllExport void ffmpegCppAddAudioStream(void * handle, const char * audioFileName);
 
-extern "C" DllExport void ffmpegCppAddVideoFilter(void* handle, const char* filterString);
-extern "C" DllExport void ffmpegCppAddAudioFilter(void* handle, const char* filterString);
+extern DllExport void ffmpegCppAddVideoFilter(void * handle, const char * filterString);
+extern DllExport void ffmpegCppAddAudioFilter(void * handle, const char * filterString);
 
-extern "C" DllExport void ffmpegCppGenerate(void* handle);
+extern DllExport void ffmpegCppGenerate(void * handle);
 
-extern "C" DllExport bool ffmpegCppIsError(void* handle);
-extern "C" DllExport const char* ffmpegCppGetError(void* handle);
+extern DllExport bool ffmpegCppIsError(void * handle);
+extern DllExport const char * ffmpegCppGetError(void * handle);
 
-extern "C" DllExport void ffmpegCppClose(void* handle);
+extern DllExport void ffmpegCppClose(void* handle);
