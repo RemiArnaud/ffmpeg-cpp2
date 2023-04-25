@@ -9,18 +9,14 @@ namespace ffmpegcpp
 {
 	class VideoInputStream : public InputStream
 	{
-
 	public:
 		VideoInputStream();
-		VideoInputStream(AVFormatContext* format, AVStream* stream);
+		VideoInputStream(AVFormatContext * format, AVStream * stream);
 		~VideoInputStream();
 
-		void AddStreamInfo(ContainerInfo* info);
-		
+		void AddStreamInfo(ContainerInfo * info);
 
 	protected:
-
 		virtual void ConfigureCodecContext();
-
 	};
 }

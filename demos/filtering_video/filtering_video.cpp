@@ -67,7 +67,7 @@ int main()
 		// Save everything to disk by closing the muxer.
 		muxer->Close();
 	}
-	catch (FFmpegException e)
+    catch (const FFmpegException & e)
 	{
 		cerr << "Exception caught!" << endl;
 		cerr << e.what() << endl;

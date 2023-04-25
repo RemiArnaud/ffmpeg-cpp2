@@ -32,4 +32,3 @@ g++ -I../../sources  -Wall -D__linux__ -std=c++11  \
           -o build/webcam_stream_to_SOUND webcam_stream_to_SOUND.cpp \
           -L../../build/ -lffmpeg-cpp \
           `pkg-config --cflags --libs libavutil libavcodec libavfilter libswscale libavdevice libavformat libswresample`
-

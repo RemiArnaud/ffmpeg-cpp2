@@ -4,22 +4,21 @@
 
 namespace ffmpegcpp
 {
-	AudioInputStream::AudioInputStream() : InputStream()
+	AudioInputStream::AudioInputStream()
+	: InputStream()
 	{
-
 	}
 	AudioInputStream::AudioInputStream(AVFormatContext* p_format, AVStream* p_stream)
-		: InputStream(p_format, p_stream)
+	: InputStream(p_format, p_stream)
 	{
 	}
 
 	void AudioInputStream::ConfigureCodecContext()
 	{
-
 		// try to guess the channel layout for the decoder
-		if (!codecContext->channel_layout)
+		if (!m_codecContext->channel_layout)
 		{
-			codecContext->channel_layout = av_get_default_channel_layout(codecContext->channels);
+			m_codecContext->channel_layout = av_get_default_channel_layout(m_codecContext->channels);
 		}
 	}
 
@@ -31,9 +30,9 @@ namespace ffmpegcpp
 	{
 		AudioStreamInfo info;
 
-		info.id = stream->id; // the layout of the id's depends on the container format - it doesn't always start from 0 or 1!
+		info.id = m_stream->id; // the layout of the id's depends on the container format - it doesn't always start from 0 or 1!
 
-		AVRational tb = stream->time_base;
+		AVRational tb = m_stream->time_base;
 
 		// FIXME : unused
 		// StreamData* metaData = new StreamData();
@@ -42,15 +41,15 @@ namespace ffmpegcpp
 
 		AVCodecContext* codecContext = avcodec_alloc_context3(NULL);
 		if (!codecContext) throw new FFmpegException(std::string("Failed to allocate temporary codec context.").c_str());
-		int ret = avcodec_parameters_to_context(codecContext, stream->codecpar);
+		int ret = avcodec_parameters_to_context(codecContext, m_stream->codecpar);
 		if (ret < 0)
 		{
 			avcodec_free_context(&codecContext);
 			throw new FFmpegException(std::string("Failed to read parameters from stream").c_str());
 		}
 
-                // DEPRECATED all the parameters below seems to be implicitely copied
-                // https://ffmpeg.org/doxygen/3.4/libavcodec_2utils_8c_source.html#l02354
+		// DEPRECATED all the parameters below seems to be implicitely copied
+		// https://ffmpeg.org/doxygen/3.4/libavcodec_2utils_8c_source.html#l02354
 		//codecContext->properties = stream->codec->properties;
 		//codecContext->codec = stream->codec->codec;
 		//codecContext->qmin = stream->codec->qmin;
@@ -60,7 +59,7 @@ namespace ffmpegcpp
 
 		info.bitRate = CalculateBitRate(codecContext);
 
-		AVCodec* codecpar = CodecDeducer::DeduceDecoder(codecContext->codec_id);
+		const AVCodec* codecpar = CodecDeducer::DeduceDecoder(codecContext->codec_id);
 		info.codec = codecpar;
 
 		info.sampleRate = codecContext->sample_rate;
@@ -73,6 +72,3 @@ namespace ffmpegcpp
 		containerInfo->audioStreams.push_back(info);
 	}
 }
-
-
-

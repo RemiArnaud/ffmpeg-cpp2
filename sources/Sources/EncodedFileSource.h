@@ -3,6 +3,7 @@
 #include "ffmpeg.h"
 #include "FrameSinks/FrameSink.h"
 #include "InputSource.h"
+#include <string>
 
 namespace ffmpegcpp
 {
@@ -12,8 +13,8 @@ namespace ffmpegcpp
 	{
 
 	public:
-		EncodedFileSource(const char* inFileName, AVCodecID codecId, FrameSink* output);
-		EncodedFileSource(const char* inFileName, const char* codecName, FrameSink* output);
+        EncodedFileSource(const char * inFileName, AVCodecID codecId, FrameSink * output);
+        EncodedFileSource(const char * inFileName, const char * codecName, FrameSink * output);
 		virtual ~EncodedFileSource();
 
 		virtual void PreparePipeline();
@@ -21,34 +22,28 @@ namespace ffmpegcpp
 		virtual void Step();
 
 	private:
+        void Init(const std::string & inFileName, const AVCodec * codec, FrameSink * output);
+        void Decode(AVPacket * packet, AVFrame * targetFrame);
+        void CleanUp();
 
-		void CleanUp();
+        bool m_done = false;
 
-		bool done = false;
-
-		FrameSinkStream* output;
+        FrameSinkStream * m_output;
 		
-		AVCodecParserContext* parser = nullptr;
+        AVCodecParserContext * m_parser = nullptr;
 
-		AVCodec* codec;
-		AVCodecContext* codecContext = nullptr;
+        const AVCodec * m_codec;
+        AVCodecContext * m_codecContext = nullptr;
 
-		int bufferSize;
-                int refillThreshold;
+        int bufferSize;
+        int refillThreshold;
 
 
-		AVFrame* decoded_frame = nullptr;
-		AVPacket* pkt = nullptr;
-		uint8_t* buffer = nullptr;
-
-		FILE* file;
-
-		void Init(const char* inFileName, AVCodec* codec, FrameSink* output);
-
-		void Decode(AVPacket *packet, AVFrame* targetFrame);
-
-		AVRational timeBaseCorrectedByTicksPerFrame;
-
-		StreamData* metaData = nullptr;
+        AVFrame * m_decoded_frame = nullptr;
+        AVPacket * m_pkt = nullptr;
+        uint8_t * m_buffer = nullptr;
+        FILE * m_file;
+        AVRational m_timeBaseCorrectedByTicksPerFrame;
+        StreamData * m_metaData = nullptr;
 	};
 }

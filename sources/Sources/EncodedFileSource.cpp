@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "EncodedFileSource.h"
 #include "FFmpegException.h"
 #include "CodecDeducer.h"
@@ -7,29 +6,29 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	EncodedFileSource::EncodedFileSource(const char* inFileName, const char* codecName, FrameSink* output)
+    EncodedFileSource::EncodedFileSource(const char * inFileName, const char * codecName, FrameSink* output)
 	{
 		try
 		{
-			AVCodec* codec = CodecDeducer::DeduceDecoder(codecName);
+            const AVCodec* codec = CodecDeducer::DeduceDecoder(codecName);
 			Init(inFileName, codec, output);
 		}
-		catch (FFmpegException e)
+        catch (const FFmpegException & e)
 		{
 			CleanUp();
 			throw e;
 		}
 	}
 
-	EncodedFileSource::EncodedFileSource(const char* inFileName, AVCodecID codecId, FrameSink* output)
+    EncodedFileSource::EncodedFileSource(const char * inFileName, AVCodecID codecId, FrameSink* output)
 	{
 		try
 		{
-			AVCodec* codec = CodecDeducer::DeduceDecoder(codecId);
+            const AVCodec* codec = CodecDeducer::DeduceDecoder(codecId);
 			Init(inFileName, codec, output);
-		}
-		catch (FFmpegException e)
-		{
+        }
+        catch (const FFmpegException & e)
+        {
 			CleanUp();
 			throw e;
 		}
@@ -42,106 +41,106 @@ namespace ffmpegcpp
 
 	void EncodedFileSource::CleanUp()
 	{
-		if (decoded_frame != nullptr)
+        if (m_decoded_frame != nullptr)
 		{
-			av_frame_free(&decoded_frame);
-			decoded_frame = nullptr;
+            av_frame_free(&m_decoded_frame);
+            m_decoded_frame = nullptr;
 		}
-		if (pkt != nullptr)
+        if (m_pkt != nullptr)
 		{
-			av_packet_free(&pkt);
-			pkt = nullptr;
+            av_packet_free(&m_pkt);
+            m_pkt = nullptr;
 		}
-		if (buffer != nullptr)
+        if (m_buffer != nullptr)
 		{
-			delete buffer;
-			buffer = nullptr;
+            delete m_buffer;
+            m_buffer = nullptr;
 		}
-		if (codecContext != nullptr)
+        if (m_codecContext != nullptr)
 		{
-			avcodec_free_context(&codecContext);
-			codecContext = nullptr;
+            avcodec_free_context(&m_codecContext);
+            m_codecContext = nullptr;
 		}
-		if (parser != nullptr)
+        if (m_parser != nullptr)
 		{
-			av_parser_close(parser);
-			parser = nullptr;
+            av_parser_close(m_parser);
+            m_parser = nullptr;
 		}
-		if (metaData != nullptr)
+        if (m_metaData != nullptr)
 		{
-			delete metaData;
-			metaData = nullptr;
+            delete m_metaData;
+            m_metaData = nullptr;
 		}
 
-		fclose(file);
+        fclose(m_file);
 	}
 
-	void EncodedFileSource::Init(const char* inFileName, AVCodec* codec, FrameSink* output)
+    void EncodedFileSource::Init(const std::string & inFileName, const AVCodec* codec, FrameSink* output)
 	{
-		this->output = output->CreateStream();
-		this->codec = codec;
+        m_output = output->CreateStream();
+        m_codec = codec;
 
-		parser = av_parser_init(codec->id);
-		if (!parser)
+        m_parser = av_parser_init(codec->id);
+        if (!m_parser)
 		{
 			throw FFmpegException(std::string("Parser for codec not found " + string(codec->name)).c_str());
 		}
 
-		codecContext = avcodec_alloc_context3(codec);
-		if (!codecContext)
+        m_codecContext = avcodec_alloc_context3(codec);
+        if (!m_codecContext)
 		{
 			throw FFmpegException(std::string("Failed to allocate context for codec " + string(codec->name)).c_str());
 		}
 
 		/* open it */
-		if (int ret = avcodec_open2(codecContext, codec, NULL) < 0)
+        if (int ret = avcodec_open2(m_codecContext, codec, NULL) < 0)
 		{
 			throw FFmpegException(std::string("Failed to open context for codec " + string(codec->name)).c_str(), ret);
 		}
 
-		file = fopen(inFileName, "rb");
-		if (!file)
+        m_file = fopen(inFileName.c_str(), "rb");
+        if (!m_file)
 		{
 			throw FFmpegException(std::string("Could not open file " + string(inFileName)).c_str());
 		}
 
-		decoded_frame = av_frame_alloc();
-		if (!decoded_frame)
+        m_decoded_frame = av_frame_alloc();
+        if (!m_decoded_frame)
 		{
 			throw FFmpegException(std::string("Could not allocate video frame").c_str());
 		}
 
-		pkt = av_packet_alloc();
-		if (!pkt)
+        m_pkt = av_packet_alloc();
+        if (!m_pkt)
 		{
 			throw FFmpegException(std::string("Failed to allocate packet").c_str());
 		}
 
 		// based on the codec, we use different buffer sizes
-		if (codecContext->codec->type == AVMEDIA_TYPE_VIDEO)
+        if (m_codecContext->codec->type == AVMEDIA_TYPE_VIDEO)
 		{
 			bufferSize = 4096;
 			refillThreshold = 0;
 		}
-		else if (codecContext->codec->type == AVMEDIA_TYPE_AUDIO)
+        else if (m_codecContext->codec->type == AVMEDIA_TYPE_AUDIO)
 		{
 			bufferSize = 20480;
 			refillThreshold = 4096;
 		}
 		else
 		{
-			throw FFmpegException(std::string("Codec " + string(codecContext->codec->name) + " is not supported as a RawFileSource").c_str());
+            throw FFmpegException(std::string("Codec " + string(m_codecContext->codec->name) + " is not supported as a RawFileSource").c_str());
 		}
 
-		buffer = new uint8_t[bufferSize + AV_INPUT_BUFFER_PADDING_SIZE];
+        m_buffer = new uint8_t[bufferSize + AV_INPUT_BUFFER_PADDING_SIZE];
 
 		/* set end of buffer to 0 (this ensures that no overreading happens for damaged MPEG streams) */
-		memset(buffer + (int)bufferSize, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+        memset(m_buffer + (int)bufferSize, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 	}
 
 	void EncodedFileSource::PreparePipeline()
 	{
-		while (!output->IsPrimed() && !IsDone())
+        while (!m_output->IsPrimed() && !IsDone())
 		{
 			Step();
 		}
@@ -149,26 +148,27 @@ namespace ffmpegcpp
 
 	bool EncodedFileSource::IsDone()
 	{
-		return done;
+        return m_done;
 	}
 
 	void EncodedFileSource::Step()
 	{
 		// one step is one part of a buffer read, this might contain no, one or multiple packets
 
-		uint8_t *data;
+        uint8_t * data;
 		size_t   data_size;
 		int ret;
 
 		/* read raw data from the input file */
-		data_size = fread(buffer, 1, bufferSize, file);
+        data_size = fread(m_buffer, 1, bufferSize, m_file);
 		if (!data_size)	return;
 
 		/* use the parser to split the data into frames */
-		data = buffer;
+        data = m_buffer;
 		while (data_size > 0)
 		{
-			ret = av_parser_parse2(parser, codecContext, &pkt->data, &pkt->size, data, (int) data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+            ret = av_parser_parse2(m_parser, m_codecContext, &m_pkt->data, &m_pkt->size,
+                data, (int)data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
 			if (ret < 0)
 			{
 				throw FFmpegException(std::string("Error while parsing file").c_str(), ret);
@@ -176,24 +176,24 @@ namespace ffmpegcpp
 			data += ret;
 			data_size -= ret;
 
-			if (pkt->size)
+            if (m_pkt->size)
 			{
-				Decode(pkt, decoded_frame);
+                Decode(m_pkt, m_decoded_frame);
 			}
 		}
 
 		// reached the end of the file - flush everything
-		if (feof(file))
+        if (feof(m_file))
 		{
 
 			/* flush the decoder */
-			pkt->data = NULL;
-			pkt->size = 0;
-			Decode(pkt, decoded_frame);
+            m_pkt->data = NULL;
+            m_pkt->size = 0;
+            Decode(m_pkt, m_decoded_frame);
 
-			output->Close();
+            m_output->Close();
 
-			done = true;
+            m_done = true;
 		}
 	}
 
@@ -202,7 +202,7 @@ namespace ffmpegcpp
 		int ret;
 
 		/* send the packet with the compressed data to the decoder */
-		ret = avcodec_send_packet(codecContext, pkt);
+        ret = avcodec_send_packet(m_codecContext, pkt);
 		if (ret < 0)
 		{
 			throw FFmpegException(std::string("Error submitting the packet to the decoder").c_str(), ret);
@@ -211,7 +211,7 @@ namespace ffmpegcpp
 		/* read all the output frames (in general there may be any number of them */
 		while (ret >= 0)
 		{
-			ret = avcodec_receive_frame(codecContext, frame);
+            ret = avcodec_receive_frame(m_codecContext, frame);
 			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 				return;
 			else if (ret < 0)
@@ -219,29 +219,29 @@ namespace ffmpegcpp
 				throw FFmpegException(std::string("Error during decoding").c_str(), ret);
 			}
 
-			if (metaData == nullptr)
+            if (m_metaData == nullptr)
 			{
 				// calculate the "correct" time_base
 				// TODO this is definitely an ugly hack but right now I have no idea on how to fix this properly.
-				timeBaseCorrectedByTicksPerFrame.num = codecContext->time_base.num;
-				timeBaseCorrectedByTicksPerFrame.den = codecContext->time_base.den;
-				timeBaseCorrectedByTicksPerFrame.num *= codecContext->ticks_per_frame;
+                m_timeBaseCorrectedByTicksPerFrame.num = m_codecContext->time_base.num;
+                m_timeBaseCorrectedByTicksPerFrame.den = m_codecContext->time_base.den;
+                m_timeBaseCorrectedByTicksPerFrame.num *= m_codecContext->ticks_per_frame;
 
 
-				metaData = new StreamData();
-				metaData->timeBase.num = timeBaseCorrectedByTicksPerFrame.num;
-				metaData->timeBase.den = timeBaseCorrectedByTicksPerFrame.den;
-				metaData->frameRate.den = timeBaseCorrectedByTicksPerFrame.num;
-				metaData->frameRate.num = timeBaseCorrectedByTicksPerFrame.den;
+                m_metaData = new StreamData();
+                m_metaData->timeBase.num = m_timeBaseCorrectedByTicksPerFrame.num;
+                m_metaData->timeBase.den = m_timeBaseCorrectedByTicksPerFrame.den;
+                m_metaData->frameRate.den = m_timeBaseCorrectedByTicksPerFrame.num;
+                m_metaData->frameRate.num = m_timeBaseCorrectedByTicksPerFrame.den;
 
-				metaData->type = codecContext->codec->type;
+                m_metaData->type = m_codecContext->codec->type;
 			}
 
 
 			// push the frame to the next stage.
 			// The time_base is filled in in the codecContext after the first frame is decoded
 			// so we can fetch it from there.
-			output->WriteFrame(frame, metaData);
+            m_output->WriteFrame(frame, m_metaData);
 		}
 	}
 }

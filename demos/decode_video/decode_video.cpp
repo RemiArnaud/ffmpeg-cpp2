@@ -95,9 +95,9 @@ int main()
 		delete demuxer;
 		delete fileSink;
 	}
-	catch (FFmpegException e)
+	catch (const FFmpegException & e)
 	{
-		cerr << "Exception caught!" << endl;
+		cout << "Exception caught : " << e.what() << endl;
 		throw e;
 	}
 

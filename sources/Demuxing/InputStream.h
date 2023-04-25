@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ffmpeg.h"
 #include "FrameSinks/FrameSink.h"
 #include "Info/ContainerInfo.h"
 #include "Demuxing/StreamData.h"
@@ -12,65 +11,66 @@ namespace ffmpegcpp
 
 	public:
 		InputStream();
-		InputStream(AVFormatContext* format, AVStream* stream);
+		InputStream(AVFormatContext * format, AVStream * stream);
 		~InputStream();
 
-		void Init(AVFormatContext* format, AVStream* stream);
+		void Init(AVFormatContext * format, AVStream * stream);
 
-		void Open(FrameSink* frameSink);
+		void Open(FrameSink * frameSink);
 
-		virtual void DecodePacket(AVPacket* pkt);
+		virtual void DecodePacket(AVPacket * pkt);
 		void Close();
 
 		bool IsPrimed();
 		int GetFramesProcessed();
-		
-		virtual void WriteFrame(AVFrame* frame, StreamData* metadata) {}
 
-		virtual void AddStreamInfo(ContainerInfo* info) = 0;
+		virtual void WriteFrame(AVFrame * frame, StreamData * metadata)
+		{
+				(void)frame;
+				(void)metadata;
+		}
+
+		virtual void AddStreamInfo(ContainerInfo * info) = 0;
 		bool IsReady() { return m_bIsReady; }
-		AVFrame*GetFrame() 
+		AVFrame * GetFrame()
 		{
-			return frame;
+			return m_frame;
 		}
-		AVCodecContext* GetContext()
+		AVCodecContext * GetContext()
 		{
-			return codecContext;
+			return m_codecContext;
 		}
-		StreamData* GetMetadata()
+		StreamData * GetMetadata()
 		{
-			return metaData;
+			return m_metaData;
 		}
 
 	protected:
 
-		AVCodecContext* codecContext = nullptr;
+		AVCodecContext * m_codecContext = nullptr;
 
 
 		virtual void ConfigureCodecContext();
 
-		AVFormatContext* format;
-		AVStream* stream;
+		AVFormatContext * m_format;
+		AVStream * m_stream;
 
-		float CalculateBitRate(AVCodecContext* ctx);
+		float CalculateBitRate(AVCodecContext * ctx);
 
 	private:
 
 		AVRational timeBaseCorrectedByTicksPerFrame;
 
-		FrameSinkStream* output = nullptr;
+		FrameSinkStream * m_output = nullptr;
 		bool m_bIsReady;
-		AVFrame* frame;
+		AVFrame * m_frame;
 
-		StreamData* metaData = nullptr;
+		StreamData * m_metaData = nullptr;
 
-		StreamData* DiscoverMetaData();
+		StreamData * DiscoverMetaData();
 
-		int nFramesProcessed = 0;
-		
+		int m_nFramesProcessed = 0;
+
 		void CleanUp();
-
 	};
-
-
 }

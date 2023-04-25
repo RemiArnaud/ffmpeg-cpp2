@@ -1,7 +1,7 @@
 // AniHub.LipSync.cpp : Defines the exported functions for the DLL application.
 //
 
-#include "simple_interface/SimpleInterface.h"
+#include "SimpleInterface.h"
 
 #include <string>
 #include <iostream>
@@ -16,7 +16,6 @@
 #include <sstream>
 
 #include "ffmpegcpp.h"
-#include "ffmpeg.h"
 
 using namespace std;
 using namespace ffmpegcpp;
@@ -103,7 +102,7 @@ void* ffmpegCppCreate(const char* outputFileName)
 		ctx->muxer = new Muxer(ctx->outputFileName.c_str());
 		return ctx;
 	}
-	catch (FFmpegException e)
+    catch (const FFmpegException & e)
 	{
 		SetError(ctx, string("Failed to create output file " + ctx->outputFileName + ": " + string(e.what())));
 		return nullptr;
@@ -128,7 +127,7 @@ void ffmpegCppAddVideoStream(void* handle, const char* videoFileName)
 		ctx->videoContext.codec = new VideoCodec(ctx->muxer->GetDefaultVideoFormat()->id);
 		ctx->videoContext.encoder = new VideoEncoder(ctx->videoContext.codec, ctx->muxer);
 	}
-	catch (FFmpegException e)
+    catch (const FFmpegException & e)
 	{
 		SetError(ctx, string("Failed to add video stream " + string(videoFileName) + ": " + string(e.what())));
 	}
@@ -151,9 +150,9 @@ void ffmpegCppAddAudioStream(void* handle, const char* audioFileName)
 		// create the encoder
 		ctx->audioContext.codec = new AudioCodec(ctx->muxer->GetDefaultAudioFormat()->id);
 		ctx->audioContext.encoder = new AudioEncoder(ctx->audioContext.codec, ctx->muxer);
-	}
-	catch (FFmpegException e)
-	{
+    }
+    catch (const FFmpegException & e)
+    {
 		SetError(ctx, string("Failed to add audio stream " + string(audioFileName) + ": " + string(e.what())));
 	}
 }
@@ -219,9 +218,9 @@ void ffmpegCppGenerate(void* handle)
 
 		// close the muxer and save the file to disk
 		ctx->muxer->Close();
-	}
-	catch (FFmpegException e)
-	{
+    }
+    catch (const FFmpegException & e)
+    {
 		SetError(ctx, string("Failed to generate output file: " + string(e.what())));
 	}
 }

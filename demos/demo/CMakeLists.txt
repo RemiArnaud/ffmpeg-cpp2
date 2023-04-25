@@ -1,0 +1,5 @@
+set(prg demo)
+link_libraries(${PROJECT_NAME})
+include_directories(../../sources)
+add_executable(${prg} ${prg}.cpp GeneratedAudioSource.cpp GeneratedVideoSource.cpp)
+add_dependencies(${prg} ${PROJECT_NAME})

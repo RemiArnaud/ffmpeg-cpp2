@@ -6,13 +6,15 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	RawAudioFileSource::RawAudioFileSource(const char* fileName, const char* inputFormat, int sampleRate, int channels, FrameSink* frameSink)
+    RawAudioFileSource::RawAudioFileSource(const char * fileName
+        , const char * inputFormat, int sampleRate, int channels
+        , FrameSink * frameSink)
 	{
-            // fileName = hw::1,0 input format = alsa, sampleRate = 48000 (default)  channels= 2 (default)  frameSink = ? AudioDecoder() ?
+        // fileName = hw::1,0 input format = alsa, sampleRate = 48000 (default)  channels= 2 (default)  frameSink = ? AudioDecoder() ?
 
 		// try to deduce the input format from the input format name
-		AVInputFormat *file_iformat;
-		if (!(file_iformat = av_find_input_format(inputFormat)))
+        const AVInputFormat *file_iformat;
+        if (!(file_iformat = av_find_input_format(inputFormat)))
 		{
 			CleanUp();
 			throw FFmpegException(std::string("Unknown input format: " + string(inputFormat)).c_str());
@@ -28,17 +30,16 @@ namespace ffmpegcpp
 
 		// create the demuxer
 		try
-		{
-			demuxer = new Demuxer(fileName, file_iformat, format_opts);
-			demuxer->DecodeBestAudioStream(frameSink);
+        {
+            m_demuxer = new Demuxer(fileName, file_iformat, format_opts);
+            m_demuxer->DecodeBestAudioStream(frameSink);
 		}
-		catch (FFmpegException e)
+        catch (const FFmpegException & e)
 		{
 			CleanUp();
 			throw e;
 		}
 	}
-
 
 	RawAudioFileSource::~RawAudioFileSource()
 	{
@@ -46,27 +47,27 @@ namespace ffmpegcpp
 	}
 
 	void RawAudioFileSource::CleanUp()
-	{
-		if (demuxer != nullptr)
-		{
-			delete demuxer;
-			demuxer = nullptr;
+    {
+        if (m_demuxer != nullptr)
+        {
+            delete m_demuxer;
+            m_demuxer = nullptr;
 		}
 	}
 
 	void RawAudioFileSource::PreparePipeline()
-	{
-		demuxer->PreparePipeline();
+    {
+        m_demuxer->PreparePipeline();
 	}
 
 	bool RawAudioFileSource::IsDone()
-	{
-		return demuxer->IsDone();
+    {
+        return m_demuxer->IsDone();
 	}
 
 	void RawAudioFileSource::Step()
-	{
-		demuxer->Step();
+    {
+        m_demuxer->Step();
 	}
 }
 

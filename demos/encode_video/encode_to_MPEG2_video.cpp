@@ -45,7 +45,7 @@ int main()
         muxer->Close();
     }
 
-    catch (FFmpegException e)
+    catch (FFmpegException const & e)
     {
         cerr << "Exception caught!" << "\n";
         cerr << e.what() << "\n";

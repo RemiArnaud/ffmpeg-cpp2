@@ -3,44 +3,51 @@
 #include "FFmpegException.h"
 #include <iostream>
 
+#include <string>
+
 using namespace std;
 
 namespace ffmpegcpp
 {
-    RawVideoFileSource::RawVideoFileSource(const char* fileName, FrameSink* p_frameSink)
+    RawVideoFileSource::RawVideoFileSource(const char * fileName
+        , FrameSink * p_frameSink)
     {
         setFrameSink(p_frameSink);
         // create the demuxer - it can handle figuring out the video type on its own apparently
         try
         {
-            demuxer = new Demuxer(fileName, NULL, NULL);
-            demuxer->DecodeBestVideoStream(m_frameSink);
+            m_demuxer = new Demuxer(fileName, NULL, NULL);
+            m_demuxer->DecodeBestVideoStream(m_frameSink);
 
         }
-        catch (FFmpegException e)
+        catch (FFmpegException const & e)
         {
             CleanUp();
             throw e;
         }
     }
+    // only testng on Linux for the moment, but Windows should work. MacOS X = don't care
+#ifdef __linux__
 
-    RawVideoFileSource::RawVideoFileSource(const char* fileName, int d_width, int d_height, int d_framerate)
+    RawVideoFileSource::RawVideoFileSource(const char * fileName
+        , int d_width, int d_height, int d_framerate)
     {
         // mandatory under Linux
         avdevice_register_all();
 
         try
         {
-            demuxer = new Demuxer(fileName, d_width, d_height, d_framerate);
+            m_demuxer = new Demuxer(fileName, d_width, d_height, d_framerate);
         }
 
-        catch (FFmpegException e)
+        catch (const FFmpegException & e)
         {
             CleanUp();
             throw e;
         }
     }
 
+#endif  /*  __linux__ */
 
         // Doesn't work for now. See the header for more info.
         /*RawVideoFileSource::RawVideoFileSource(const char* fileName, int width, int height, const char* frameRate, AVPixelFormat format, VideoFrameSink* frameSink)
@@ -86,29 +93,29 @@ namespace ffmpegcpp
 
     void RawVideoFileSource::CleanUp()
     {
-        if (demuxer != nullptr)
+        if (m_demuxer != nullptr)
         {
-            avformat_close_input(&pAVFormatContextIn);
-            avformat_free_context(pAVFormatContextIn);
+            avformat_close_input(&m_pAVFormatContextIn);
+            avformat_free_context(m_pAVFormatContextIn);
 
-            delete demuxer;
-            demuxer = nullptr;
+            delete m_demuxer;
+            m_demuxer = nullptr;
         }
     }
 
     void RawVideoFileSource::PreparePipeline()
     {
-        demuxer->PreparePipeline();
+        m_demuxer->PreparePipeline();
     }
 
     bool RawVideoFileSource::IsDone()
     {
-        return demuxer->IsDone();
+        return m_demuxer->IsDone();
     }
 
     void RawVideoFileSource::Step()
     {
-        demuxer->Step();
+        m_demuxer->Step();
     }
 
     void RawVideoFileSource::setFrameSink(FrameSink * aFrameSink)

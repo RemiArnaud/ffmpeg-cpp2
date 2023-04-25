@@ -14,7 +14,7 @@ int main()
 		// Create a muxer that will output as MP3.
 		Muxer* muxer = new Muxer("output.mp3");
 #ifdef DEBUG
-            std::cout <<  "muxer created "<< "\n";
+		cout <<  "muxer created "<< "\n";
 #endif
 
 		// Create a MP3 codec that will encode the raw data.
@@ -25,13 +25,13 @@ int main()
 		// Tie it to the muxer so it will be written to the file.
 		AudioEncoder* encoder = new AudioEncoder(p_codec, muxer);
 
-		// Load the raw audio file so we can process it.
-		// We need to provide some info because we can't derive it from the raw format.
-		// Hand it the encoder so it will pass on its raw data to the encoder, which will in turn pass it on to the muxer.
-		const char* rawAudioFile   = "../../samples/Vivaldi_s16le_2_channels_samplerate_11025.dat";
-		const char* rawAudioFormat = "s16le";
-                int rawAudioSampleRate     = 11025;
-                int rawAudioChannels       = 2;
+	// Load the raw audio file so we can process it.
+	// We need to provide some info because we can't derive it from the raw format.
+	// Hand it the encoder so it will pass on its raw data to the encoder, which will in turn pass it on to the muxer.
+	const char* rawAudioFile   = "../../samples/Vivaldi_s16le_2_channels_samplerate_11025.dat";
+	const char* rawAudioFormat = "s16le";
+	int rawAudioSampleRate     = 11025;
+	int rawAudioChannels       = 2;
 
 		RawAudioFileSource* audioFile = new RawAudioFileSource(rawAudioFile, rawAudioFormat, rawAudioSampleRate, rawAudioChannels, encoder);
 
@@ -47,10 +47,10 @@ int main()
 		// Save everything to disk by closing the muxer.
 		muxer->Close();
 	}
-	catch (FFmpegException e)
+  catch (const FFmpegException & e)
 	{
-		cerr << "Exception caught!" << "\n";
-                std::cout << "Are you sure you installed libmp3lame ? " <<  "\n";
+		cout << "Exception caught!" << e.what() << "\n";
+		cout << "Are you sure you installed libmp3lame ? " <<  "\n";
 		throw e;
 	}
 

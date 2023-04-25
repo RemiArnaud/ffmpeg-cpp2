@@ -7,12 +7,11 @@
  */
 
 #include <iostream>
-
 #include <ffmpegcpp.h>
+#include "video_device.h"
 
 using namespace ffmpegcpp;
-using std::string;
-using std::cerr;
+using namespace std;
 
 void record_VP9()
 {
@@ -21,13 +20,14 @@ void record_VP9()
     Muxer* muxer = new Muxer("../videos/output_VP9.avi");
 
     // These are example video and audio sources used below.
-    const char* videoDevice = "/dev/video0";
+    const char videoDevice[] = VIDEO_DEVICE;
 
-    const char* audioDevice = "hwplug:1,0"; // testing
+    //const char* audioDevice = "hwplug:1,0"; // testing
     //const char* audioDevice = "hw:1,0"; // first webcam
     //const char* audioDevice = "default";
-
+    const char* audioDevice = "pulse";
     const char * audioDeviceFormat = "alsa";
+
     int audioSampleRate = 44100;
     int audioChannels   = 2;
 
@@ -87,10 +87,10 @@ void record_VP9()
     {
         int width  = 1280;
         int height = 720;
-        int fps = 24;
+        int fps = 30;
 
         // FIXME : timing is not precise, and probably wrong
-        AVRational frameRate = { 24, 1 };
+        AVRational frameRate = { 30, 1 };
 
         // All seem to work
         //AVPixelFormat input_pix_fmt= AV_PIX_FMT_NV12;
@@ -103,8 +103,8 @@ void record_VP9()
         RawAudioFileSource* audioFile = new RawAudioFileSource(audioDevice, audioDeviceFormat, audioSampleRate, audioChannels, audioEncoder);
         Demuxer *           demuxer   = new Demuxer(videoDevice, width, height, fps);
 
-        // FIXME : how to sync videoand audio ?
-        //audioFile->DecodeBestAudioStream(audioEncoder);
+        // FIXME : how to sync video and audio ?
+        //demuxer->DecodeBestAudioStream(audioEncoder);
         demuxer->DecodeBestVideoStream(videoEncoder);
 
         audioFile->PreparePipeline();
@@ -112,12 +112,13 @@ void record_VP9()
 
         int frameNumber = 0;
 
-        while (!demuxer->IsDone() && (frameNumber < 100))
+        demuxer->setMaxFrameCount(300);
+        while (!demuxer->IsDone() && (frameNumber < 300))
         {
             frameNumber = demuxer->GetFrameCount(demuxer->getVideoStreamIndx());
             std::cerr << "frame number : " << frameNumber << "\n";
 
-            if (frameNumber > 100)
+            if (frameNumber > 300)
                 demuxer->Stop();
 
             demuxer->Step();
@@ -137,7 +138,7 @@ void record_VP9()
 
         delete muxer;
     }
-    catch (FFmpegException e)
+    catch (FFmpegException const & e)
     {
         cerr << e.what() << "\n";
         throw e;

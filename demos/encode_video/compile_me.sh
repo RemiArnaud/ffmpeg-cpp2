@@ -12,7 +12,7 @@
 
 #BUIlD_DIR="./build"
 
-g++ -g ${DEBG} -I.. -Wall -std=c++11  \
+g++ ${DEBG} -I.. -Wall -std=c++11  \
           -I../../sources \
           -o encode_video_to_MPEG2 encode_to_MPEG2_video.cpp \
           -L../../build/ -lffmpeg-cpp \

@@ -5,23 +5,23 @@ using namespace std;
 
 namespace ffmpegcpp
 {
-	OutputStream::OutputStream(Muxer* muxer, Codec* codec)
-	{
-		this->muxer = muxer;
-		this->codec = codec;
+    OutputStream::OutputStream(Muxer * muxer, Codec * codec)
+    : m_codec(codec)
+    , m_muxer(muxer)
+    {
 	}
 
-	void OutputStream::SendPacketToMuxer(AVPacket* pkt)
+    void OutputStream::SendPacketToMuxer(AVPacket * pkt)
 	{
 		// if the muxer is primed, we submit the packet for real
-		if (muxer->IsPrimed())
+		if (m_muxer->IsPrimed())
 		{
 			// drain the queue
 			DrainPacketQueue();
 
 			// send this packet
 			PreparePacketForMuxer(pkt);
-			muxer->WritePacket(pkt);
+			m_muxer->WritePacket(pkt);
 		}
 
 		// otherwise, we queue the packet
@@ -32,27 +32,27 @@ namespace ffmpegcpp
 			{
 				throw FFmpegException("Failed to allocate packet");
 			}
-			av_packet_ref(tmp_pkt, pkt);
-			packetQueue.push_back(tmp_pkt);
+            av_packet_ref(tmp_pkt, pkt);
+            m_packetQueue.push_back(tmp_pkt);
 		}
 	}
 
 	void OutputStream::DrainPacketQueue()
-	{
-		if (packetQueue.size() > 0) printf("Drain %zu packets from the packet queue...", packetQueue.size());
-		for (unsigned int i = 0; i < packetQueue.size(); ++i)
-		{
-			AVPacket* tmp_pkt = packetQueue[i];
+    {
+        if (m_packetQueue.size() > 0) printf("Drain %lu packets from the packet queue...", m_packetQueue.size());
+        for (unsigned int i = 0; i < m_packetQueue.size(); ++i)
+        {
+            AVPacket* tmp_pkt = m_packetQueue[i];
 
 			// Write the compressed frame to the media file
 			PreparePacketForMuxer(tmp_pkt);
-			muxer->WritePacket(tmp_pkt);
+			m_muxer->WritePacket(tmp_pkt);
 
 			// Release the packet
 			av_packet_unref(tmp_pkt);
 			av_packet_free(&tmp_pkt);
 		}
 
-		packetQueue.clear();
+        m_packetQueue.clear();
 	}
 }

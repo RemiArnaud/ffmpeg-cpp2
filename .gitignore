@@ -1,11 +1,4 @@
-This part is Linux only
-
 .compile_me.sh
-
-
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
 
 /source/ffmpeg-cpp/.vs/ffmpeg-cpp/v15
 /source/ffmpeg-cpp/ffmpeg-cpp/obj
@@ -41,13 +34,19 @@ demos/webcam_to_video/build/webcam_stream_to_MPEG4
 demos/webcam_to_video/build/webcam_stream_to_SOUND
 demos/webcam_to_video/build/webcam_stream_to_VP9
 
-demos/webcam_to_video/videos/output_H264.mp4
-demos/webcam_to_video/videos/output_H264.mkv
-demos/webcam_to_video/videos/output_VP9.mkv
-demos/webcam_to_video/videos/output_VP9.avi
-demos/webcam_to_video/videos/output_MPEG4.avi
-demos/webcam_to_video/videos/output_MPEG2.mpg
+/demos/webcam_to_video/videos/audio.mp4
+/demos/webcam_to_video/videos/final_video.mkv
+/demos/webcam_to_video/videos/output_H264.mp4
+/demos/webcam_to_video/videos/output_H264.mkv
+/demos/webcam_to_video/videos/output_VP9.mkv
+/demos/webcam_to_video/videos/output_VP9.avi
+/demos/webcam_to_video/videos/output_MPEG4.avi
+/demos/webcam_to_video/videos/output_MPEG2.mpg
 
 
 *.db
 .vs/
+/demos/decode_audio/rawaudio.aac
+/demos/encode_audio/output.mp3
+/demos/encode_video/output_*.mpg
+build/

@@ -53,7 +53,7 @@ int main()
 
 
 	}
-	catch (FFmpegException e)
+	catch (const FFmpegException & e)
 	{
 		cerr << "Exception caught!" << endl;
 		cerr << e.what() << endl;

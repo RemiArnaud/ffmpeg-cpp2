@@ -2,7 +2,7 @@
 #include "ffmpegcpp.h"
 
 using namespace ffmpegcpp;
-
+using namespace std;
 
 int main()
 {
@@ -82,10 +82,10 @@ int main()
         // Save everything to disk by closing the muxer.
         muxer->Close();
     }
-    catch (FFmpegException e)
+    catch (const FFmpegException & e)
     {
-        std::cerr << "Exception caught!" << "\n";
+        cout << "Exception caught : " << e.what() << "\n";
         throw e;
     }
-    std::cout << "Encoding complete!" << "\n";
+    cout << "Encoding complete!" << "\n";
 }

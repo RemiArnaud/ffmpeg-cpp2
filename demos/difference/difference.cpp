@@ -28,12 +28,13 @@ int main()
 		//VideoFilter* filter = new VideoFilter("scale=100:800", videoEncoder);
 
 		// Create a video filter that will put a vignette on one of the video's,
-		// so that our difference filter van detect this.
+		// so that our difference filter can detect this.
 		Filter* vignetteFilter = new Filter("vignette", filter);
 
 		// Load both video's
 		Demuxer* videoContainer1 = new Demuxer("../../samples/carphone.h264");
 		Demuxer* videoContainer2 = new Demuxer("../../samples/carphone.h264");
+		//Demuxer* videoContainer2 = new Demuxer("../../samples/carphone_qcif.y4m");
 
 		// Tie the best stream from each container to the output
 		videoContainer1->DecodeBestVideoStream(filter);
@@ -57,7 +58,7 @@ int main()
 		// Save everything to disk by closing the muxer.
 		muxer->Close();
 	}
-	catch (FFmpegException e)
+	catch (const FFmpegException & e)
 	{
 		cerr << "Exception caught!" << endl;
 		cerr << e.what() << endl;

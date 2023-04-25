@@ -1,23 +1,22 @@
 #include "Filter.h"
 #include "FFmpegException.h"
 #include <iostream>
-#include <string>
 
 using namespace std;
 
 namespace ffmpegcpp
 {
 
-	Filter::Filter(const char* p_filterString, FrameSink* p_target)
-	{
-		this->targetMediaType = p_target->GetMediaType();
-		this->m_target = p_target->CreateStream();
-		this->m_filterString = p_filterString;
+    Filter::Filter(const char * p_filterString, FrameSink * p_target)
+    {
+        m_targetMediaType = p_target->GetMediaType();
+        m_target = p_target->CreateStream();
+        m_filterString = p_filterString;
 	}
 
 	AVMediaType Filter::GetMediaType()
-	{
-		return targetMediaType;
+    {
+        return m_targetMediaType;
 	}
 
 	Filter::~Filter()
@@ -26,9 +25,9 @@ namespace ffmpegcpp
 	}
 
 	void Filter::CleanUp()
-	{
-		avfilter_graph_free(&filter_graph);
-		av_frame_free(&filt_frame);
+    {
+        avfilter_graph_free(&m_filter_graph);
+        av_frame_free(&m_filt_frame);
 		// TODO filter inputs in derived class!
 	}
 
@@ -37,104 +36,104 @@ namespace ffmpegcpp
 		int ret;
 		char args[512];
 
-		filt_frame = av_frame_alloc();
-		if (!filt_frame)
+        m_filt_frame = av_frame_alloc();
+        if (!m_filt_frame)
 		{
-			throw FFmpegException(string("Could not allocate intermediate video frame for filter").c_str());
+			throw FFmpegException(std::string("Could not allocate intermediate video frame for filter").c_str());
 		}
 
 		try
 		{
-			// create the filter graph
-			filter_graph = avfilter_graph_alloc();
-			if (!filter_graph)
+            // create the filter graph
+            m_filter_graph = avfilter_graph_alloc();
+            if (!m_filter_graph)
 			{
-				throw FFmpegException(std::string(string("Failed to allocate filter graph")).c_str());
+				throw FFmpegException(std::string("Failed to allocate filter graph").c_str());
 			}
 
 			// create the filter string based on the defined inputs & one output
 			string fullFilterString = "";
 
 			// fetch one frame from each input and use it to construct the filter
-			AVFrame *frame;
-			for (int i = (int)inputs.size() - 1; i >= 0; --i)
-			{
-				if (!inputs[i]->PeekFrame(&frame))
+            AVFrame *frame;
+            for (int i = m_inputs.size() - 1; i >= 0; --i)
+            {
+                if (!m_inputs[i]->PeekFrame(&frame))
 				{
 					throw new FFmpegException(string(string("No frame found for input ") + to_string(i)).c_str());
 				}
 
-				// get the meta data for this input stream
-				StreamData* metaData = inputs[i]->GetMetaData();
+                // get the meta data for this input stream
+                StreamData* metaData = m_inputs[i]->GetMetaData();
 
 				// based on the type of data, we fill in the relevant info
 				FillArguments(args, sizeof(args), frame, metaData);
 
 				char bufferString[1000];
-				snprintf(bufferString, sizeof(bufferString), "%s=%s [in_%d]; ", GetBufferName(metaData->type), args, i + 1);
+                snprintf(bufferString, sizeof(bufferString), "%s=%s [in_%d]; ", GetBufferName(metaData->type), args, i + 1);
 				fullFilterString = bufferString + fullFilterString; // prepend the buffer string
 
 			}
 
-			// append an output sink to the buffer string
-			for (unsigned int i = 0; i < inputs.size(); ++i)
+            // append an output sink to the buffer string
+            for (unsigned int i = 0; i < m_inputs.size(); ++i)
 			{
 				fullFilterString += "[in_" + to_string(i + 1) + "] ";
 			}
 			fullFilterString += m_filterString;
-			fullFilterString += " [result]; [result] ";
-			fullFilterString += GetBufferSinkName(targetMediaType);
+            fullFilterString += " [result]; [result] ";
+            fullFilterString += GetBufferSinkName(m_targetMediaType);
 
 			// let avfilter generate the entire filter graph based on this string, including all
 			// inputs and outputs. There are other ways to do this, but this is by far the easiest
 			// one.
 			AVFilterInOut *gis = NULL;
-			AVFilterInOut *gos = NULL;
-			ret = avfilter_graph_parse2(filter_graph, fullFilterString.c_str(), &gis, &gos);
+            AVFilterInOut *gos = NULL;
+            ret = avfilter_graph_parse2(m_filter_graph, fullFilterString.c_str(), &gis, &gos);
 			if (ret < 0)
-			{
+            {
 				throw FFmpegException(string("Failed to parse and generate filters").c_str(), ret);
 			}
 
 			// we don't use these
 			avfilter_inout_free(&gis);
-			avfilter_inout_free(&gos);
+            avfilter_inout_free(&gos);
 
-			char *sDump=avfilter_graph_dump(filter_graph, NULL);
-			printf("%s", sDump);
+            char *sDump=avfilter_graph_dump(m_filter_graph, NULL);
+            printf("%s", sDump);
 
-			// Fetch all input buffer sources and the output buffer sink from the graph.
-			for (unsigned int i = 0; i < filter_graph->nb_filters; ++i)
-			{
-				AVFilterContext* ctx = filter_graph->filters[i];
+            // Fetch all input buffer sources and the output buffer sink from the graph.
+            for (unsigned int i = 0; i < m_filter_graph->nb_filters; ++i)
+            {
+                AVFilterContext* ctx = m_filter_graph->filters[i];
 				if (ctx->nb_inputs == 0)
-				{
-					bufferSources.push_back(ctx);
+                {
+                    m_bufferSources.push_back(ctx);
 				}
 				if (ctx->nb_outputs == 0)
-				{
-					buffersink_ctx = ctx;
+                {
+                    m_buffersink_ctx = ctx;
 				}
 			}
 
-			// Finally configure (initialize) the graph.
-			if ((ret = avfilter_graph_config(filter_graph, NULL)) < 0)
+            // Finally configure (initialize) the graph.
+            if ((ret = avfilter_graph_config(m_filter_graph, NULL)) < 0)
 			{
 				throw FFmpegException(string("Failed to configure filter graph").c_str(), ret);
 			}
 
-			// we configure our output meta data based on the sink's data
-			outputMetaData.timeBase = buffersink_ctx->inputs[0]->time_base;
-			outputMetaData.frameRate = buffersink_ctx->inputs[0]->frame_rate;
-			outputMetaData.type = targetMediaType;
+            // we configure our output meta data based on the sink's data
+            m_outputMetaData.timeBase = m_buffersink_ctx->inputs[0]->time_base;
+            m_outputMetaData.frameRate = m_buffersink_ctx->inputs[0]->frame_rate;
+            m_outputMetaData.type = m_targetMediaType;
 		}
-		catch (FFmpegException e)
+        catch (const FFmpegException & e)
 		{
 			throw e;
 		}
 	}
 
-	void Filter::FillArguments(char* args, int argsLength, AVFrame* frame, StreamData *metaData)
+	void Filter::FillArguments(char * args, int argsLength, AVFrame* frame, StreamData *metaData)
 	{
 		// this is a video input stream
 		if (metaData->type == AVMEDIA_TYPE_VIDEO)
@@ -156,7 +155,7 @@ namespace ffmpegcpp
 			uint64_t channelLayout = frame->channel_layout;
 			if (channelLayout == 0) channelLayout = av_get_default_channel_layout(frame->channels);
 			snprintf(args, argsLength,
-				"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%llu",
+				"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%lu",
 				metaData->timeBase.num, metaData->timeBase.den, frame->sample_rate,
 				av_get_sample_fmt_name((AVSampleFormat)frame->format), channelLayout);
 		}
@@ -168,7 +167,7 @@ namespace ffmpegcpp
 		}
 	}
 
-	const char* Filter::GetBufferName(AVMediaType mediaType)
+    const char * Filter::GetBufferName(AVMediaType mediaType)
 	{
 		// this is a video input stream
 		if (mediaType == AVMEDIA_TYPE_VIDEO) return "buffer";
@@ -176,7 +175,7 @@ namespace ffmpegcpp
 		else throw new FFmpegException(std::string(std::string("Media type ") + av_get_media_type_string(mediaType) + " is not supported by filters.").c_str());
 	}
 
-	const char* Filter::GetBufferSinkName(AVMediaType mediaType)
+    const char * Filter::GetBufferSinkName(AVMediaType mediaType)
 	{
 		// this is a video input stream
 		if (mediaType == AVMEDIA_TYPE_VIDEO) return "buffersink";
@@ -188,12 +187,12 @@ namespace ffmpegcpp
 	{
 		AVFrame *frame;
 		// FIXME : unused
-		// AVRational* timeBase;
-		for (unsigned int i = 0; i < inputs.size(); ++i)
-		{
-			while (inputs[i]->FetchFrame(&frame))
-			{
-				int ret = av_buffersrc_add_frame(bufferSources[i], frame);
+        // AVRational* timeBase;
+        for (unsigned int i = 0; i < m_inputs.size(); ++i)
+        {
+            while (m_inputs[i]->FetchFrame(&frame))
+            {
+                int ret = av_buffersrc_add_frame(m_bufferSources[i], frame);
                                 if (ret <0)
                                     std::cout << "Pb with av_buffersrc_add_frame" << "\n";
 
@@ -207,25 +206,25 @@ namespace ffmpegcpp
 
 		// each new stream is associated with an input, and we need at least one frame from each input
 		// until we can configure the filter graph!
-		VideoFilterInput* input = new VideoFilterInput();
-		inputs.push_back(input);
-		return new FrameSinkStream(this,(int) inputs.size() - 1);
+        VideoFilterInput* input = new VideoFilterInput();
+        m_inputs.push_back(input);
+        return new FrameSinkStream(this, m_inputs.size() - 1);
 	}
 
 	void Filter::WriteFrame(int streamIndex, AVFrame* frame, StreamData* metaData)
 	{
-		// lazily initialize because we need the data from the frame to configure our filter graph
-		if (!initialized)
+        // lazily initialize because we need the data from the frame to configure our filter graph
+        if (!m_initialized)
 		{
-			// add to the proper input
-			inputs[streamIndex]->SetMetaData(metaData);
-			inputs[streamIndex]->WriteFrame(frame);
+            // add to the proper input
+            m_inputs[streamIndex]->SetMetaData(metaData);
+            m_inputs[streamIndex]->WriteFrame(frame);
 
 			// see if all inputs have received a frame - at this point, we can initialize!
-			bool allInputsHaveFrames = true;
-			for (unsigned int i = 0; i < inputs.size(); ++i)
-			{
-				if (!inputs[i]->HasFrame())
+            bool allInputsHaveFrames = true;
+            for (unsigned int i = 0; i < m_inputs.size(); ++i)
+            {
+                if (!m_inputs[i]->HasFrame())
 				{
 					allInputsHaveFrames = false;
 				}
@@ -235,8 +234,8 @@ namespace ffmpegcpp
 			if (allInputsHaveFrames)
 			{
 				ConfigureFilterGraph();
-				DrainInputQueues();
-				initialized = true;
+                DrainInputQueues();
+                m_initialized = true;
 			}
 
 			// we don't do anything else if we haven't finished configuring
@@ -246,8 +245,8 @@ namespace ffmpegcpp
 			}
 		}
 
-		// add to the proper buffer source
-		int ret = av_buffersrc_add_frame_flags(bufferSources[streamIndex], frame, AV_BUFFERSRC_FLAG_KEEP_REF);
+        // add to the proper buffer source
+        int ret = av_buffersrc_add_frame_flags(m_bufferSources[streamIndex], frame, AV_BUFFERSRC_FLAG_KEEP_REF);
 
                 if (ret < 0)
                     std::cout << "Pb with av_buffersrc_add_frame_flags()" << "\n";
@@ -256,24 +255,24 @@ namespace ffmpegcpp
 	}
 
 	void Filter::Close(int streamIndex)
-	{
-		if (!initialized) return; // can't close if we were never opened
+    {
+        if (!m_initialized) return; // can't close if we were never opened
 
-		int ret = av_buffersrc_add_frame_flags(bufferSources[streamIndex], NULL, AV_BUFFERSRC_FLAG_KEEP_REF);
+        int ret = av_buffersrc_add_frame_flags(m_bufferSources[streamIndex], NULL, AV_BUFFERSRC_FLAG_KEEP_REF);
 
                 if (ret < 0)
                     std::cout << "Pb with av_buffersrc_add_frame_flags()" << "\n";
 
 		PollFilterGraphForFrames();
 
-		// close this input
-		inputs[streamIndex]->Close();
+        // close this input
+        m_inputs[streamIndex]->Close();
 
 		// close our target only if all inputs are closed
-		bool allClosed = true;
-		for (unsigned int i = 0; i < inputs.size(); ++i)
-		{
-			if (!inputs[i]->IsClosed()) allClosed = false;
+        bool allClosed = true;
+        for (unsigned int i = 0; i < m_inputs.size(); ++i)
+        {
+                    if (!m_inputs[i]->IsClosed()) allClosed = false;
 		}
 		if (allClosed)
 		{
@@ -285,8 +284,8 @@ namespace ffmpegcpp
 	{
 		int ret = 0;
 		while (ret >= 0)
-		{
-			ret = av_buffersink_get_frame(buffersink_ctx, filt_frame);
+        {
+            ret = av_buffersink_get_frame(m_buffersink_ctx, m_filt_frame);
 			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 			{
 				return;
@@ -296,9 +295,9 @@ namespace ffmpegcpp
 				throw FFmpegException(std::string("Error during filtering").c_str(), ret);
 			}
 
-			m_target->WriteFrame(filt_frame, &outputMetaData);
+            m_target->WriteFrame(m_filt_frame, &m_outputMetaData);
 
-			av_frame_unref(filt_frame);
+            av_frame_unref(m_filt_frame);
 		}
 	}
 

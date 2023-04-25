@@ -5,8 +5,8 @@
 
 #include "VideoFrameSink.h"
 #include "VideoFilterInput.h"
-
 #include <vector>
+#include <string>
 
 namespace ffmpegcpp
 {
@@ -15,12 +15,12 @@ namespace ffmpegcpp
 
 	public:
 
-		Filter(const char* filterString, FrameSink* target);
+        Filter(const char * filterString, FrameSink * target);
 		virtual ~Filter();
 
-		FrameSinkStream* CreateStream();
+        FrameSinkStream * CreateStream();
 
-		void WriteFrame(int streamIndex, AVFrame* frame, StreamData* metaData);
+        void WriteFrame(int streamIndex, AVFrame * frame, StreamData * metaData);
 		void Close(int streamIndex);
 
 		bool IsPrimed();
@@ -36,25 +36,23 @@ namespace ffmpegcpp
 		void PollFilterGraphForFrames();
 		void FillArguments(char* args, int argsLength, AVFrame* frame, StreamData* metaData);
 
-		const char* GetBufferName(AVMediaType mediaType);
-		const char* GetBufferSinkName(AVMediaType mediaType);
+        const char * GetBufferName(AVMediaType mediaType);
+        const char * GetBufferSinkName(AVMediaType mediaType);
 
-		std::vector<VideoFilterInput*> inputs;
-		std::vector<AVFilterContext*> bufferSources;
+        std::vector<VideoFilterInput*> m_inputs;
+        std::vector<AVFilterContext*> m_bufferSources;
 
-		AVMediaType targetMediaType;
-		FrameSinkStream* m_target;
+        AVMediaType m_targetMediaType;
+        FrameSinkStream * m_target;
 
-		const char* m_filterString;
+        const char * m_filterString;
 
-		AVFilterGraph *filter_graph = nullptr;
-		AVFilterContext *buffersink_ctx = nullptr;
-		AVFrame* filt_frame = nullptr;
+        AVFilterGraph * m_filter_graph = nullptr;
+        AVFilterContext * m_buffersink_ctx = nullptr;
+        AVFrame * m_filt_frame = nullptr;
 
-		bool initialized = false;
+        bool m_initialized = false;
 
-		StreamData outputMetaData;
+        StreamData m_outputMetaData;
 	};
-
-
 }

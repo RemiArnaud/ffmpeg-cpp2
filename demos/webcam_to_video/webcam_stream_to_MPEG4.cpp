@@ -8,17 +8,17 @@
 
 #include <iostream>
 #include <ffmpegcpp.h>
+#include "video_device.h"
 
 using namespace ffmpegcpp;
-using std::string;
-using std::cerr;
+using namespace std;
 
 void record_MPEG4()
 {
     avdevice_register_all();
 
     // These are example video and audio sources used below.
-    const char* videoDevice = "/dev/video0";
+    const char videoDevice[] = VIDEO_DEVICE;
 
     Muxer * muxer = new Muxer("../videos/output_MPEG4.avi");
 
@@ -82,7 +82,7 @@ void record_MPEG4()
 
         delete muxer;
     }
-    catch (FFmpegException e)
+    catch (FFmpegException const & e)
     {
         cerr << e.what() << "\n";
         throw e;

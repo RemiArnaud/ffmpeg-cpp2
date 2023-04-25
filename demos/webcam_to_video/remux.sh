@@ -8,7 +8,11 @@
 #
 
 g++ -I../../sources  -Wall -D__linux__ -std=c++11  \
-          -o build/remux_webcam remux_webcam.cpp \
+          -o build/remux_webcam remux_webcam.cpp getch.c \
           -L../../build/ -lffmpeg-cpp -lpthread \
           `pkg-config --cflags --libs libavutil libavcodec libavfilter libswscale libavdevice libavformat libswresample`
 
+g++ -I../../sources  -Wall -D__linux__ -std=c++11  \
+          -o build/remux_webcam_to_MKV remux_webcam_to_MKV.cpp getch.c \
+          -L../../build/ -lffmpeg-cpp -lpthread \
+          `pkg-config --cflags --libs libavutil libavcodec libavfilter libswscale libavdevice libavformat libswresample`

@@ -27,7 +27,7 @@ namespace ffmpegcpp
 
 		void LazilyInitialize(OpenCodec* openCodec);
 
-		AVStream* stream;
+        AVStream* m_stream;
 
 		bool initialized = false;
 
